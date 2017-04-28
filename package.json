@@ -2,7 +2,7 @@
   "name": "image-upload",
   "version": "0.0.1",
   "description": "Image upload service in Node and Express",
-  "main": "dist/app.js",
+  "main": "dist/index.js",
   "repository": "git@github.com:paullessing/image-upload",
   "author": "paullessing <paul@paullessing.com>",
   "license": "MIT",
@@ -10,13 +10,21 @@
     "run": "node dist/app.js",
     "build": "node node_modules/typescript/bin/tsc",
     "build-dev": "node node_modules/typescript/bin/tsc --watch --outDir tmp",
-    "nodemon": "node node_modules/nodemon/bin/nodemon tmp/app.js",
+    "nodemon": "node node_modules/nodemon/bin/nodemon tmp/index.js",
     "serve": "node node_modules/concurrently/src/main --kill-others --prefix \"[{name}]\" --names \"tsc ,node\" --prefix-colors \"blue,magenta\" \"yarn build-dev\" \"yarn nodemon\""
   },
   "dependencies": {
-    "express": "^4.15.2"
+    "express": "^4.15.2",
+    "express-router-decorators": "paullessing/express-router-decorators",
+    "inversify": "^4.1.0",
+    "morgan": "^1.8.1",
+    "reflect-metadata": "^0.1.10",
+    "winston": "^2.3.1"
   },
   "devDependencies": {
+    "@types/express": "^4.0.35",
+    "@types/morgan": "^1.7.32",
+    "@types/winston": "^2.3.1",
     "concurrently": "^3.4.0",
     "nodemon": "^1.11.0",
     "typescript": "^2.3.1"
