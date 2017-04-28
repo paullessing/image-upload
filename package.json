@@ -1,0 +1,24 @@
+{
+  "name": "image-upload",
+  "version": "0.0.1",
+  "description": "Image upload service in Node and Express",
+  "main": "dist/app.js",
+  "repository": "git@github.com:paullessing/image-upload",
+  "author": "paullessing <paul@paullessing.com>",
+  "license": "MIT",
+  "scripts": {
+    "run": "node dist/app.js",
+    "build": "node node_modules/typescript/bin/tsc",
+    "build-dev": "node node_modules/typescript/bin/tsc --watch --outDir tmp",
+    "nodemon": "node node_modules/nodemon/bin/nodemon tmp/app.js",
+    "serve": "node node_modules/concurrently/src/main --kill-others --prefix \"[{name}]\" --names \"tsc ,node\" --prefix-colors \"blue,magenta\" \"yarn build-dev\" \"yarn nodemon\""
+  },
+  "dependencies": {
+    "express": "^4.15.2"
+  },
+  "devDependencies": {
+    "concurrently": "^3.4.0",
+    "nodemon": "^1.11.0",
+    "typescript": "^2.3.1"
+  }
+}
