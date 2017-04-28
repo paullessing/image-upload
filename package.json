@@ -14,9 +14,12 @@
     "serve": "node node_modules/concurrently/src/main --kill-others --prefix \"[{name}]\" --names \"tsc ,node\" --prefix-colors \"blue,magenta\" \"yarn build-dev\" \"yarn nodemon\""
   },
   "dependencies": {
+    "busboy": "^0.2.14",
     "express": "^4.15.2",
     "express-router-decorators": "paullessing/express-router-decorators",
+    "file-type": "^4.2.0",
     "inversify": "^4.1.0",
+    "moment": "^2.18.1",
     "morgan": "^1.8.1",
     "reflect-metadata": "^0.1.10",
     "winston": "^2.3.1"
