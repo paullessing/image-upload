@@ -11,7 +11,7 @@ const app = express();
 const container = Dependencies.createContainer(__dirname);
 const router = createRouter(container.get(ApiRouter), { log: winston });
 
-app.use((morgan as morgan.Morgan)('dev'));
+app.use((morgan as any as morgan.Morgan)('dev'));
 
 app.use(router);
 app.use('/*', (req, res) => res.send(404).end());
