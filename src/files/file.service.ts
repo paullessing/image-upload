@@ -15,20 +15,17 @@ export class FileService {
   ) {
   }
 
-  public uploadFile(data: FileContent): Promise<UploadedFile> {
-    const file = {
-      content: data
-    } as Partial<UploadedFile>;
-
+  public uploadFile(data: NodeJS.ReadableStream): Promise<UploadedFile> {
     return this.storage.storeFile(data)
       .then((storageId) => {
-        file.storageId = storageId;
-        file.dateUploaded = moment();
+        const file = {
+          storageId,
+          dateUploaded: moment(),
+          size: 0, // TODO,
+          mimeType: '' // TODO
+        };
 
-        file.size = 0; // TODO
-        file.mimeType = ''; // TODO
-
-        return this.database.saveFile(file as UploadedFile);
+        return this.database.saveFile(file);
       });
   }
 }

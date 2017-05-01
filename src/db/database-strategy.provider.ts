@@ -1,13 +1,14 @@
 import { DATABASE_STRATEGY, DatabaseStrategy } from './database-strategy.interface';
 import { Provider } from '../util/inject';
-import { Config } from '../config/config.interface';
+import { Config, CONFIG } from '../config';
 import { MemoryDatabaseStrategy } from './strategies/memory-database-strategy';
 import { FilesystemDatabaseStrategy } from './strategies/filesystem-database-strategy';
+import { inject } from 'inversify';
 
 @Provider(DATABASE_STRATEGY)
-export class StorageStrategyProvider {
+export class DatabaseStrategyProvider {
   constructor(
-    private config: Config
+    @inject(CONFIG) private config: Config
   ) {}
 
   public $provide(): DatabaseStrategy {
@@ -15,7 +16,11 @@ export class StorageStrategyProvider {
       case 'memory':
         return new MemoryDatabaseStrategy();
       case 'file':
-        return new FilesystemDatabaseStrategy(this.config.fileDatabase);
+        if (this.config.fileDatabase) {
+          return new FilesystemDatabaseStrategy(this.config.fileDatabase);
+        } else {
+          throw new Error(`Missing database configuration for file database`);
+        }
       default:
         throw new Error(`Unknown Database type: '${this.config.databaseType}'`);
     }

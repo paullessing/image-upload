@@ -5,7 +5,7 @@ import * as uuid from 'uuid';
 
 export class FilesystemDatabaseStrategy implements DatabaseStrategy {
 
-  private db = {};
+  private db: { [key: string]: any } = {};
 
   constructor(
     private config: FileDatabaseConfig
@@ -13,17 +13,15 @@ export class FilesystemDatabaseStrategy implements DatabaseStrategy {
     this.readFromFile();
   }
 
-  public create<T extends { id?: string }>(data: T): Promise<T> {
+  public create<T extends { id?: string } & object>(data: T): Promise<T> {
     const id = this.getUniqueId();
-    const newData = {
-      ...data,
-      id
-    };
+    const newData = Object.assign({}, data, { id });
     this.db[id] = newData;
 
     return this.flushToFile()
       .then(() => newData);
   }
+
   public retrieve<T extends { id?: string }>(id: string): Promise<T> {
     return Promise.resolve<T>(this.db[id]);
   }
@@ -37,7 +35,7 @@ export class FilesystemDatabaseStrategy implements DatabaseStrategy {
   }
 
   private flushToFile(): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       fs.writeFile(this.config.path, JSON.stringify(this.db), (err) => {
         if (err) {
           reject(err);

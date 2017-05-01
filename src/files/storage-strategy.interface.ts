@@ -4,5 +4,5 @@ export const STORAGE_STRATEGY = Symbol('StorageStrategy');
 
 export interface StorageStrategy {
   getFile(id: StorageId): Promise<FileContent>;
-  storeFile(content: FileContent): Promise<StorageId>;
+  storeFile(content: NodeJS.ReadableStream): Promise<StorageId>;
 }

@@ -1,5 +1,5 @@
 import * as express from 'express';
-import {createRouter} from 'express-router-decorators';
+import { createRouter } from 'express-router-decorators';
 import * as morgan from 'morgan';
 import * as winston from 'winston';
 
@@ -9,7 +9,7 @@ import { ApiRouter } from './routers/api.router';
 const app = express();
 
 const container = Dependencies.createContainer(__dirname);
-const router = createRouter(container.get(ApiRouter), { log: winston });
+const router = createRouter(container.get(ApiRouter), {log: winston});
 
 app.use((morgan as any as morgan.Morgan)('dev'));
 

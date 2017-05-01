@@ -1,8 +1,7 @@
 import { Bindings } from '../util/inject';
 import { interfaces } from 'inversify';
 import { config } from './config';
-
-export const CONFIG = Symbol('Config');
+import { CONFIG } from './config.interface';
 
 @Bindings()
 export class ConfigBindings {

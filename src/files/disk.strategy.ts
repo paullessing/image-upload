@@ -12,18 +12,21 @@ export class StoreToDiskStrategy implements StorageStrategy {
     private config: DiskStorageConfig
   ) {}
 
-  public storeFile(content: FileContent): Promise<StorageId> {
+  public storeFile(content: NodeJS.ReadableStream): Promise<StorageId> {
     return this.getUniqueId()
       .then((id: string) => {
         const path = this.getPath(id);
         return new Promise((resolve, reject) => {
-          fs.writeFile(path, content, (err) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(id);
-            }
+          const stream = fs.createWriteStream(path);
+
+          content.on('end', () => {
+            resolve(id);
           });
+          content.on('error', (err: any) => {
+            reject(err);
+          });
+
+          content.pipe(stream);
         });
       });
   }
@@ -37,7 +40,7 @@ export class StoreToDiskStrategy implements StorageStrategy {
     return Promise.resolve(this.getPath(id))
       .then((path: string) => new Promise((resolve, reject) => {
         fs.exists(path, (exists: boolean) => {
-          if (exists) {
+          if (!exists) {
             return resolve(id);
           } else {
             // Try again with a new UUID
@@ -49,6 +52,8 @@ export class StoreToDiskStrategy implements StorageStrategy {
   }
 
   private getPath(id: StorageId): string {
-    return path.join(this.config.dir, id);
+    const r = path.join(this.config.dir, id);
+    console.log('getPath', r);
+    return r;
   }
 }

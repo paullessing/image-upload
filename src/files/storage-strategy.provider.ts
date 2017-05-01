@@ -2,11 +2,13 @@ import { Provider } from '../util/inject';
 import { Config } from '../config';
 import { STORAGE_STRATEGY, StorageStrategy } from './storage-strategy.interface';
 import { StoreToDiskStrategy } from './disk.strategy';
+import { CONFIG } from '../config';
+import { inject } from 'inversify';
 
 @Provider(STORAGE_STRATEGY)
 export class StorageStrategyProvider {
   constructor(
-    private config: Config
+    @inject(CONFIG) private config: Config
   ) {}
 
   public $provide(): StorageStrategy {

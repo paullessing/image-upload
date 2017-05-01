@@ -7,7 +7,7 @@ export type StorageId = string;
 
 export interface UploadedFile {
   // Identifiers
-  id: FileId;
+  id?: FileId;
   storageId?: StorageId;
 
   dateUploaded: Moment;

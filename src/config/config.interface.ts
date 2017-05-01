@@ -1,3 +1,5 @@
+export const CONFIG = Symbol('Config');
+
 export interface Config {
   storageType: 'disk';
   diskStorage?: DiskStorageConfig;

@@ -6,7 +6,7 @@ import * as moment from 'moment';
 import uuid = require('uuid');
 
 interface StoredFile {
-  id: FileId;
+  id?: FileId;
   storageId: StorageId;
   dateUploaded: string;
   size: number;
@@ -28,8 +28,7 @@ export class DatabaseService {
       mimeType: file.mimeType
     };
 
-    return this.strategy.create(data)
-      .then(() => file);
+    return this.strategy.create(data);
   }
 
   public getFile(id: FileId): Promise<UploadedFile> {
