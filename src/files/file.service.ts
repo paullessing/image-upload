@@ -1,19 +1,34 @@
-import { Provider } from '../util/inject';
-import { DiskFileService } from './disk-file.service';
-import { FileContent, FileId, UploadedFile } from './uploaded-file.model';
+import { Service } from '../util/inject';
+import { FileContent, UploadedFile } from './uploaded-file.model';
+import { DatabaseService } from '../db/database.service';
+import { inject } from 'inversify';
+import { STORAGE_STRATEGY, StorageStrategy } from './storage-strategy.interface';
+import * as moment from 'moment';
+import uuid = require('uuid');
 
-export const FileService = Symbol('FileService');
+@Service()
+export class FileService {
 
-export interface FileService {
-  getFile(id: FileId): Promise<UploadedFile>;
-  storeFile(content: FileContent): Promise<UploadedFile>;
-}
+  constructor(
+    @inject(STORAGE_STRATEGY) private storage: StorageStrategy,
+    private database: DatabaseService
+  ) {
+  }
 
-@Provider(FileService)
-export class FileServiceProvider {
+  public uploadFile(data: FileContent): Promise<UploadedFile> {
+    const file = {
+      content: data
+    } as Partial<UploadedFile>;
 
-  public $provide(): FileService {
-    // Default implementation
-    return new DiskFileService();
+    return this.storage.storeFile(data)
+      .then((storageId) => {
+        file.storageId = storageId;
+        file.dateUploaded = moment();
+
+        file.size = 0; // TODO
+        file.mimeType = ''; // TODO
+
+        return this.database.saveFile(file as UploadedFile);
+      });
   }
 }
