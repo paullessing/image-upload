@@ -31,8 +31,10 @@ export class StoreToDiskStrategy implements StorageStrategy {
       });
   }
 
-  public getFile(id: StorageId): Promise<FileContent> {
-    return Promise.reject('Not implemented');
+  public getFile(id: StorageId): Promise<NodeJS.ReadableStream> {
+    const path = this.getPath(id);
+    const stream = fs.createReadStream(path);
+    return Promise.resolve(stream);
   }
 
   private getUniqueId(): Promise<string> {

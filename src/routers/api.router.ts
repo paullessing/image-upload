@@ -2,10 +2,9 @@ import { Service } from '../util/inject';
 import { Get, Post, Response } from 'express-router-decorators';
 import * as express from 'express';
 import * as Busboy from 'busboy';
-import { inspect } from 'util';
-import * as Stream from 'stream';
 import { FileService } from '../files/file.service';
 import { UploadedFile } from '../files/uploaded-file.model';
+import { ImageSizes } from '../interfaces/image-sizes';
 
 @Service()
 export class ApiRouter {
@@ -20,15 +19,15 @@ export class ApiRouter {
   }
 
   @Get('/image')
-  public getImageUploadForm(req: express.Request, res: express.Response): void {
+  public getImageUploadForm(): Promise<Response> {
     // TEMPORARY CODE
-    res.writeHead(200, { Connection: 'close' });
-    res.end(`<html><head></head><body>
-               <form method="POST" enctype="multipart/form-data">
-                <input type="file" name="image"><br />
-                <input type="submit">
-              </form>
-            </body></html>`);
+    return Response.resolve(`
+<html><head></head><body>
+  <form method="POST" enctype="multipart/form-data">
+    <input type="file" name="image"><br />
+    <input type="submit">
+  </form>
+</body></html>`);
   }
 
   @Post('/image')
@@ -74,6 +73,27 @@ export class ApiRouter {
       });
 
       req.pipe(busboy);
+    });
+  }
+
+  @Get('/image/:imageId/:size')
+  public getOriginalImage(req: express.Request, res: express.Response): void {
+    const imageId = req.params['imageId'];
+    const size = req.params['size'];
+    console.log('image id', imageId, size);
+
+    if (ImageSizes.values().indexOf(size) < 0) {
+      return res.sendStatus(404).end();
+    }
+
+    this.fileService.getFile(imageId, size)
+      .then((data: NodeJS.ReadableStream) => {
+        data.pipe(res);
+      }, () => {
+        res.sendStatus(404).end();
+      }).catch((e) => {
+        console.error(e);
+        res.sendStatus(500).end();
     });
   }
 }

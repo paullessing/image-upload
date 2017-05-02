@@ -16,7 +16,7 @@ interface StoredFile {
 @Service()
 export class DatabaseService {
   constructor(
-    @inject(DATABASE_STRATEGY) private strategy: DatabaseStrategy
+    @inject(DATABASE_STRATEGY) private database: DatabaseStrategy
   ) {}
 
   public saveFile(file: UploadedFile): Promise<UploadedFile> {
@@ -28,11 +28,15 @@ export class DatabaseService {
       mimeType: file.mimeType
     };
 
-    return this.strategy.create(data);
+    return this.database.create(data)
+      .then((data: StoredFile) => ({
+        ...file,
+        id: data.id
+      }));
   }
 
   public getFile(id: FileId): Promise<UploadedFile> {
-    return this.strategy.retrieve<StoredFile>(id)
+    return this.database.retrieve<StoredFile>(id)
       .then((file) => {
         const uploadedFile: UploadedFile = {
           id: file.id,
