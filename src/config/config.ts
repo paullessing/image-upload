@@ -6,5 +6,8 @@ export const config: Config = {
   diskStorage: {
     dir: path.join(__dirname, '../../uploads')
   },
-  databaseType: 'memory'
+  databaseType: 'file',
+  fileDatabase: {
+    path: path.join(__dirname, '../../db')
+  }
 };
