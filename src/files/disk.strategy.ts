@@ -2,31 +2,38 @@ import * as uuid from 'uuid';
 import * as path from 'path';
 import * as fs from 'fs';
 
-import { FileContent, StorageId } from './uploaded-file.model';
+import { StorageId } from './uploaded-file.model';
 import { DiskStorageConfig } from '../config';
 import { StorageStrategy } from './storage-strategy.interface';
+import { sync as mkdirpSync } from 'mkdirp';
 
 export class StoreToDiskStrategy implements StorageStrategy {
 
   constructor(
     private config: DiskStorageConfig
-  ) {}
+  ) {
+    mkdirpSync(config.dir); // Ensure uploads directory exists
+  }
 
   public storeFile(content: NodeJS.ReadableStream): Promise<StorageId> {
     return this.getUniqueId()
       .then((id: string) => {
         const path = this.getPath(id);
         return new Promise((resolve, reject) => {
-          const stream = fs.createWriteStream(path);
+          try {
+            const stream = fs.createWriteStream(path);
 
-          content.on('end', () => {
-            resolve(id);
-          });
-          content.on('error', (err: any) => {
-            reject(err);
-          });
+            content.on('end', () => {
+              resolve(id);
+            });
+            content.on('error', (err: any) => {
+              reject(err);
+            });
 
-          content.pipe(stream);
+            content.pipe(stream);
+          } catch (e) {
+            reject(e);
+          }
         });
       });
   }
@@ -54,8 +61,6 @@ export class StoreToDiskStrategy implements StorageStrategy {
   }
 
   private getPath(id: StorageId): string {
-    const r = path.join(this.config.dir, id);
-    console.log('getPath', r);
-    return r;
+    return path.join(this.config.dir, id);
   }
 }
