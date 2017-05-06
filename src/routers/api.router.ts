@@ -13,5 +13,4 @@ export class ApiRouter {
   ) {
     this.imageRouter = imageRouter;
   }
-
 }

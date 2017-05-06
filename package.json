@@ -7,7 +7,7 @@
   "author": "paullessing <paul@paullessing.com>",
   "license": "MIT",
   "scripts": {
-    "run": "node dist/app.js",
+    "start": "node dist/index.js",
     "build": "node node_modules/typescript/bin/tsc",
     "build-dev": "node node_modules/typescript/bin/tsc --watch --outDir tmp",
     "nodemon": "node node_modules/nodemon/bin/nodemon tmp/index.js",
