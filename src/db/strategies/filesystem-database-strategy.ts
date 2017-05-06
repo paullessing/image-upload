@@ -10,6 +10,7 @@ export class FilesystemDatabaseStrategy implements DatabaseStrategy {
   constructor(
     private config: FileDatabaseConfig
   ) {
+
     this.readFromFile();
   }
 
@@ -52,6 +53,4 @@ export class FilesystemDatabaseStrategy implements DatabaseStrategy {
       this.db = JSON.parse(fs.readFileSync(path).toString());
     }
   }
-
-
 }

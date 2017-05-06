@@ -4,7 +4,10 @@ import * as path from 'path';
 export const config: Config = {
   storageType: 'disk',
   diskStorage: {
-    dir: path.join(__dirname, '..')
+    dir: path.join(__dirname, '../../uploads')
   },
-  databaseType: 'memory'
+  databaseType: 'file',
+  fileDatabase: {
+    path: path.join(__dirname, '../../db')
+  }
 };
