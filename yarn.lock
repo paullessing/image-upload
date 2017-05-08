@@ -21,6 +21,12 @@
     "@types/express-serve-static-core" "*"
     "@types/serve-static" "*"
 
+"@types/file-type@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@types/file-type/-/file-type-0.0.2.tgz#9b34d05af6583a61c73e8a900b49b1285fa9f808"
+  dependencies:
+    "@types/node" "*"
+
 "@types/mime@*":
   version "0.0.29"
   resolved "https://registry.yarnpkg.com/@types/mime/-/mime-0.0.29.tgz#fbcfd330573b912ef59eeee14602bface630754b"

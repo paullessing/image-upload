@@ -1,11 +1,13 @@
 import { Service } from '../util/inject';
-import { FileContent, FileId, UploadedFile } from './uploaded-file.model';
+import { FileId, UploadedFile } from './uploaded-file.model';
 import { DatabaseService } from '../db/database.service';
 import { inject } from 'inversify';
 import { STORAGE_STRATEGY, StorageStrategy } from './storage-strategy.interface';
 import * as moment from 'moment';
-import uuid = require('uuid');
 import { ImageSize } from '../interfaces/image-sizes';
+import { Transform } from 'stream';
+import { SizeDetectingStream } from './size-detecting-stream';
+import { FileTypeDetectingStream } from './file-type-detecting-stream';
 
 class FileNotFoundError extends Error {
   constructor(id: FileId) {
@@ -24,13 +26,18 @@ export class FileService {
   }
 
   public uploadFile(data: NodeJS.ReadableStream): Promise<UploadedFile> {
-    return this.storage.storeFile(data)
+    const sizeStream = new SizeDetectingStream();
+    const fileTypeStream = new FileTypeDetectingStream();
+
+    return this.storage.storeFile(data.pipe(sizeStream).pipe(fileTypeStream))
       .then((storageId) => {
+        console.log('Data:', sizeStream.size, fileTypeStream.fileType);
+
         const file = {
           storageId,
           dateUploaded: moment(),
-          size: 0, // TODO,
-          mimeType: '' // TODO
+          size: sizeStream.size, // TODO this is wrong
+          mimeType: fileTypeStream.fileType.mime // TODO do something with ext maybe?
         };
 
         return this.database.saveFile(file);
