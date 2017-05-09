@@ -23,6 +23,14 @@ export class FilesystemDatabaseStrategy implements DatabaseStrategy {
       .then(() => newData);
   }
 
+  public update<T extends { id?: string } & object>(data: T): Promise<T> {
+    const newData = Object.assign({}, data);
+    this.db[data.id as string] = newData;
+
+    return this.flushToFile()
+      .then(() => newData);
+  }
+
   public retrieve<T extends { id?: string }>(id: string): Promise<T> {
     return Promise.resolve<T>(this.db[id]);
   }

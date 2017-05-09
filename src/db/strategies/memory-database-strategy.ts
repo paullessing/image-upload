@@ -11,6 +11,12 @@ export class MemoryDatabaseStrategy implements DatabaseStrategy {
     return Promise.resolve<T>(this.db[id] = newData);
   }
 
+  public update<T extends { id?: string }>(data: T): Promise<T> {
+    const newData = Object.assign({}, data);
+
+    return Promise.resolve<T>(this.db[data.id as string] = newData);
+  }
+
   public retrieve<T extends { id?: string }>(id: string): Promise<T> {
     return Promise.resolve<T>(this.db[id]);
   }

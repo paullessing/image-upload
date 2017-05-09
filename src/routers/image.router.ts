@@ -5,12 +5,14 @@ import * as Busboy from 'busboy';
 import { FileService } from '../files/file.service';
 import { UploadedFile } from '../files/uploaded-file.model';
 import { ImageSizes } from '../interfaces/image-sizes';
+import { ImageService } from '../image/image.service';
+import { DownloadableFile, UploadService } from '../upload/upload.service';
 
 @Service()
 export class ImageRouter {
 
   constructor(
-    private fileService: FileService
+    private uploadService: UploadService
   ) {}
 
   @Get('/')
@@ -45,7 +47,7 @@ export class ImageRouter {
         mimetype: string
       ) => {
         if (fieldname === 'image') {
-          uploadedFile = this.fileService.uploadFile(file, filename, mimetype)
+          uploadedFile = this.uploadService.uploadImage(file, filename)
             .then((file: UploadedFile) => {
               return file;
             });
@@ -82,9 +84,11 @@ export class ImageRouter {
       return res.sendStatus(404).end();
     }
 
-    this.fileService.getFile(imageId, size)
-      .then((data: NodeJS.ReadableStream) => {
-        data.pipe(res);
+    this.uploadService.getImage(imageId, size)
+      .then((image: DownloadableFile) => {
+        res.header('Content-Length', `${image.size}`);
+        res.header('Content-Type', `${image.mimetype}`);
+        image.data.pipe(res);
       }, () => {
         res.sendStatus(404).end();
       }).catch((e) => {
