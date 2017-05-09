@@ -1,5 +1,6 @@
 import { Stream  } from 'stream';
 import { Moment } from 'moment';
+import { ImageSize } from '../interfaces/image-sizes';
 
 export type FileContent = string | Stream;
 export type FileId = string;
@@ -12,5 +13,7 @@ export interface UploadedFile {
 
   dateUploaded: Moment;
   size: number;
-  mimeType: string;
+  mimetype: string;
+  filename: string;
+  sizes: ImageSize[];
 }

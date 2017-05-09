@@ -25,7 +25,7 @@ export class DatabaseService {
       storageId: file.storageId as string,
       dateUploaded: file.dateUploaded.toJSON(),
       size: file.size,
-      mimeType: file.mimeType
+      mimeType: file.mimetype
     };
 
     return this.database.create(data)
@@ -43,7 +43,7 @@ export class DatabaseService {
           storageId: file.storageId,
           dateUploaded: moment(file.dateUploaded),
           size: file.size,
-          mimeType: file.mimeType
+          mimetype: file.mimeType
         };
 
         return uploadedFile;

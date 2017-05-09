@@ -45,7 +45,7 @@ export class ImageRouter {
         mimetype: string
       ) => {
         if (fieldname === 'image') {
-          uploadedFile = this.fileService.uploadFile(file)
+          uploadedFile = this.fileService.uploadFile(file, filename, mimetype)
             .then((file: UploadedFile) => {
               return file;
             });

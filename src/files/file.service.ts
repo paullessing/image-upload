@@ -4,9 +4,8 @@ import { DatabaseService } from '../db/database.service';
 import { inject } from 'inversify';
 import { STORAGE_STRATEGY, StorageStrategy } from './storage-strategy.interface';
 import * as moment from 'moment';
-import { ImageSize } from '../interfaces/image-sizes';
-import { Transform } from 'stream';
-import { SizeDetectingStream } from './size-detecting-stream';
+import { ImageSize, ImageSizes } from '../interfaces/image-sizes';
+import * as meter from 'stream-meter';
 import { FileTypeDetectingStream } from './file-type-detecting-stream';
 
 class FileNotFoundError extends Error {
@@ -25,19 +24,19 @@ export class FileService {
   ) {
   }
 
-  public uploadFile(data: NodeJS.ReadableStream): Promise<UploadedFile> {
-    const sizeStream = new SizeDetectingStream();
-    const fileTypeStream = new FileTypeDetectingStream();
+  public uploadFile(data: NodeJS.ReadableStream, filename: string, mimetype: string): Promise<UploadedFile> {
+    const size = meter();
+    const mime = new FileTypeDetectingStream();
 
-    return this.storage.storeFile(data.pipe(sizeStream).pipe(fileTypeStream))
+    return this.storage.storeFile(data.pipe(size).pipe(mime))
       .then((storageId) => {
-        console.log('Data:', sizeStream.size, fileTypeStream.fileType);
-
-        const file = {
+        const file: UploadedFile = {
           storageId,
           dateUploaded: moment(),
-          size: sizeStream.size, // TODO this is wrong
-          mimeType: fileTypeStream.fileType.mime // TODO do something with ext maybe?
+          size: size.bytes,
+          mimetype: mime.fileType.mime,
+          filename,
+          sizes: [ImageSizes.ORIGINAL]
         };
 
         return this.database.saveFile(file);

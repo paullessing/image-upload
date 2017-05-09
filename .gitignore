@@ -43,4 +43,4 @@ jspm_packages
 tmp/
 dist/
 uploads/
-db
+/db

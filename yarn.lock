@@ -52,6 +52,12 @@
     "@types/express-serve-static-core" "*"
     "@types/mime" "*"
 
+"@types/stream-meter@^0.0.19":
+  version "0.0.19"
+  resolved "https://registry.yarnpkg.com/@types/stream-meter/-/stream-meter-0.0.19.tgz#b6510a8eed960b573377f024ff461b02381c270a"
+  dependencies:
+    "@types/node" "*"
+
 "@types/uuid@^2.0.29":
   version "2.0.29"
   resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-2.0.29.tgz#939a198ab73567f811ab84f670d2be9c25addd41"
@@ -1689,6 +1695,12 @@ stream-combiner@~0.0.4:
   resolved "https://registry.yarnpkg.com/stream-combiner/-/stream-combiner-0.0.4.tgz#4d5e433c185261dde623ca3f44c586bcf5c4ad14"
   dependencies:
     duplexer "~0.1.1"
+
+stream-meter@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/stream-meter/-/stream-meter-1.0.4.tgz#52af95aa5ea760a2491716704dbff90f73afdd1d"
+  dependencies:
+    readable-stream "^2.1.4"
 
 stream-shift@^1.0.0:
   version "1.0.0"
