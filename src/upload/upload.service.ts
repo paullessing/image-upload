@@ -87,8 +87,11 @@ export class UploadService {
             const newFile: UploadedFile = { ...file, versions: newVersions};
             return this.database.saveFile(newFile);
           })
-          .then((newFile: UploadedFile) => [newFile, newData]);
+          .then((newFile: UploadedFile) =>
+            // TODO: This stores the file, then reads it from where it was stored, instead of reading from memory. It should return quickly.
+            this.fileService.getFile(newFile.versions[size].storageId)
+              .then((data: NodeJS.ReadableStream) => [newFile, data])
+          );
       });
-
   }
 }
