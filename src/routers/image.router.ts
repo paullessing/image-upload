@@ -2,11 +2,16 @@ import { Service } from '../util/inject';
 import { Get, Post, Response } from 'express-router-decorators';
 import * as express from 'express';
 import * as Busboy from 'busboy';
-import { FileService } from '../files/file.service';
 import { UploadedFile } from '../files/uploaded-file.model';
-import { ImageSizes } from '../interfaces/image-sizes';
-import { ImageService } from '../image/image.service';
-import { DownloadableFile, UploadService } from '../upload/upload.service';
+import { ImageSize, ImageSizes } from '../interfaces/image-sizes';
+import { DownloadableFile, FileNotFoundError, UploadService } from '../upload/upload.service';
+
+export interface ImageMetadata {
+  id: string;
+  filename: string;
+  dateUploaded: string;
+  sizes: string[];
+}
 
 @Service()
 export class ImageRouter {
@@ -28,7 +33,7 @@ export class ImageRouter {
   }
 
   @Post('/')
-  public uploadImage(req: express.Request, res: express.Response): Promise<UploadedFile> {
+  public uploadImage(req: express.Request, res: express.Response): Promise<Response> {
     const busboy = new Busboy({
       headers: req.headers,
       limits: {
@@ -56,9 +61,9 @@ export class ImageRouter {
           file.resume();
         }
       });
-      busboy.on('finish', function() {
+      busboy.on('finish', () => {
         if (uploadedFile) {
-          uploadedFile.then((file: UploadedFile) => Response.success(201, file))
+          uploadedFile.then((file: UploadedFile) => Response.success(201, this.getMetadata(file)))
             .then(resolve, reject);
         } else {
           reject(Response.error(400, 'Missing "image" field in request'));
@@ -75,16 +80,15 @@ export class ImageRouter {
 
   @Get('/:imageId')
   @Get('/:imageId/:size')
-  public getOriginalImage(req: express.Request, res: express.Response): void {
+  public getImage(req: express.Request, res: express.Response): void {
     const imageId = req.params['imageId'];
     const size = req.params['size'] || ImageSizes.ORIGINAL;
-    console.log('image id', imageId, size);
 
     if (ImageSizes.values().indexOf(size) < 0) {
       return res.sendStatus(404).end();
     }
 
-    this.uploadService.getImage(imageId, size)
+    this.uploadService.getImageContents(imageId, size)
       .then((image: DownloadableFile) => {
         res.header('Content-Length', `${image.size}`);
         res.header('Content-Type', `${image.mimetype}`);
@@ -95,5 +99,29 @@ export class ImageRouter {
       console.error(e);
       res.sendStatus(500).end();
     });
+  }
+
+  @Get('/:imageId/info') // Must be below getImage for correct evaluation (This is incorrect, see https://github.com/FOODit/express-router-decorators/issues/2)
+  public getImageInfo(req: express.Request): Promise<Response> {
+    const imageId = req.params['imageId'];
+    return this.uploadService.getFile(imageId)
+      .then((file: UploadedFile) => Response.success(this.getMetadata(file)))
+      .catch((e: any) => {
+        if (e instanceof FileNotFoundError) {
+          return Response.reject(404);
+        } else {
+          console.error(e);
+          return Response.reject(500);
+        }
+      });
+  }
+
+  private getMetadata(image: UploadedFile): ImageMetadata {
+    return {
+      id: image.id as string,
+      filename: image.filename,
+      dateUploaded: image.dateUploaded.toJSON(),
+      sizes: Object.keys(image.versions)
+    };
   }
 }

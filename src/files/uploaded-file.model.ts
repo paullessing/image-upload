@@ -1,6 +1,5 @@
-import { Stream  } from 'stream';
+import { Stream } from 'stream';
 import { Moment } from 'moment';
-import { ImageSize } from '../interfaces/image-sizes';
 
 export type FileContent = string | Stream;
 export type FileId = string;
@@ -14,7 +13,7 @@ export interface FileVersion {
 
 export interface UploadedFile {
   // Identifiers
-  id?: FileId;
+  id?: FileId; // TODO reason more strictly about IDs
 
   dateUploaded: Moment;
   mimetype: string;

@@ -1,12 +1,8 @@
 import { Service } from '../util/inject';
-import { FileId, FileVersion, StorageId, UploadedFile } from './uploaded-file.model';
-import { DatabaseService } from '../db/database.service';
+import { FileVersion, StorageId } from './uploaded-file.model';
 import { inject } from 'inversify';
 import { STORAGE_STRATEGY, StorageStrategy } from './storage-strategy.interface';
-import * as moment from 'moment';
-import { ImageSize, ImageSizes } from '../interfaces/image-sizes';
 import * as meter from 'stream-meter';
-import { FileTypeDetectingStream } from './file-type-detecting-stream';
 
 @Service()
 export class FileService {
@@ -34,8 +30,7 @@ export class FileService {
       });
   }
 
-  public uploadFileVersion(data: NodeJS.ReadableStream, file: UploadedFile, version: string): Promise<FileVersion> {
-    const newFile = { ...file, versions: { ...file.versions } };
+  public uploadFileVersion(data: NodeJS.ReadableStream, version: string): Promise<FileVersion> {
     const size = meter();
 
     return this.storage.storeFile(data.pipe(size))

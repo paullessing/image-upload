@@ -51,15 +51,19 @@ export class UploadService {
       });
   }
 
-  public getImage(id: FileId, size: ImageSize): Promise<DownloadableFile> {
+  public getFile(id: FileId): Promise<UploadedFile> {
     return this.database.getFile(id)
       .then((file: UploadedFile) => {
-        console.log(file);
         if (!file) {
           throw new FileNotFoundError(id);
         }
-        return this.ensureImageSize(file, size);
-      })
+        return file;
+      });
+  }
+
+  public getImageContents(id: FileId, size: ImageSize): Promise<DownloadableFile> {
+    return this.getFile(id)
+      .then((file: UploadedFile) => this.ensureImageSize(file, size))
       .then(([file, stream]: [UploadedFile, NodeJS.ReadableStream]) => ({
         data: stream,
         size: file.versions[size].size,
@@ -80,11 +84,11 @@ export class UploadService {
       .then((data: NodeJS.ReadableStream) =>
         this.imageService.resize(data, size))
       .then((newData: NodeJS.ReadableStream) => {
-        return this.fileService.uploadFileVersion(newData, file, size)
+        return this.fileService.uploadFileVersion(newData, size)
           .then((newVersion: FileVersion) => {
             const newVersions: { [key: string]: FileVersion } = { ...file.versions, [size]: newVersion };
 
-            const newFile: UploadedFile = { ...file, versions: newVersions};
+            const newFile: UploadedFile = Object.assign({}, file, { versions: newVersions });
             return this.database.saveFile(newFile);
           })
           .then((newFile: UploadedFile) =>
