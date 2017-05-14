@@ -9,7 +9,6 @@ interface StoredFile {
   id?: FileId;
 
   dateUploaded: string;
-  mimetype: string;
   filename: string;
   versions: {
     [key: string]: FileVersion
@@ -26,7 +25,6 @@ export class DatabaseService {
     const data: StoredFile = {
       id: file.id,
       dateUploaded: file.dateUploaded.toJSON(),
-      mimetype: file.mimetype,
       filename: file.filename,
       versions: file.versions
     };
@@ -44,7 +42,6 @@ export class DatabaseService {
         const uploadedFile: UploadedFile = {
           id: file.id,
           dateUploaded: moment(file.dateUploaded),
-          mimetype: file.mimetype,
           filename: file.filename,
           versions: file.versions
         };

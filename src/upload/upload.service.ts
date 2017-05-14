@@ -3,7 +3,6 @@ import { FileId, FileVersion, UploadedFile } from '../files/uploaded-file.model'
 import { DatabaseService } from '../db/database.service';
 import { FileService } from '../files/file.service';
 import { ImageSize, ImageSizes } from '../interfaces/image-sizes';
-import { FileTypeDetectingStream } from '../files/file-type-detecting-stream';
 import { moment } from '../lib';
 import { ImageService } from '../image/image.service';
 
@@ -31,16 +30,13 @@ export class UploadService {
   ) {}
 
   public uploadImage(data: NodeJS.ReadableStream, filename: string): Promise<UploadedFile> {
-    const mimeType = new FileTypeDetectingStream();
-
-    return this.fileService.uploadFile(data.pipe(mimeType), filename, ImageSizes.ORIGINAL)
+    return this.fileService.uploadFile(data, filename, ImageSizes.ORIGINAL)
       .then((version: FileVersion) => {
         const file: UploadedFile = {
           dateUploaded: moment(),
-          mimetype: mimeType.fileType.mime,
           filename,
           versions: {
-            [ImageSizes.ORIGINAL]: version
+            [ImageSizes.ORIGINAL]: version,
           }
         };
 
@@ -67,7 +63,7 @@ export class UploadService {
       .then(([file, stream]: [UploadedFile, NodeJS.ReadableStream]) => ({
         data: stream,
         size: file.versions[size].size,
-        mimetype: file.mimetype
+        mimetype: file.versions[size].mimetype
       }))
       .catch((e) => {
         console.error(e);

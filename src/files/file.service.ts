@@ -3,6 +3,7 @@ import { FileVersion, StorageId } from './uploaded-file.model';
 import { inject } from 'inversify';
 import { STORAGE_STRATEGY, StorageStrategy } from './storage-strategy.interface';
 import * as meter from 'stream-meter';
+import { FileTypeDetectingStream } from './file-type-detecting-stream';
 
 @Service()
 export class FileService {
@@ -14,15 +15,14 @@ export class FileService {
 
   public uploadFile(data: NodeJS.ReadableStream, filename: string, version: string): Promise<FileVersion> {
     const size = meter();
+    const mimeType = new FileTypeDetectingStream();
 
-    return this.storage.storeFile(data.pipe(size))
+    return this.storage.storeFile(data.pipe(size).pipe(mimeType))
       .then((storageId: StorageId) => {
         const file: FileVersion = {
-          // dateUploaded: moment(),
-          // mimetype: mime.fileType.mime,
-          // filename,
           key: version,
           size: size.bytes,
+          mimetype: mimeType.fileType.mime,
           storageId
         };
 

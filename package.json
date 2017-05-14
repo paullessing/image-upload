@@ -23,6 +23,7 @@
     "moment": "^2.18.1",
     "morgan": "^1.8.1",
     "reflect-metadata": "^0.1.10",
+    "sharp": "^0.17.3",
     "stream-meter": "^1.0.4",
     "uuid": "^3.0.1",
     "winston": "^2.3.1"
@@ -33,6 +34,7 @@
     "@types/file-type": "^0.0.2",
     "@types/mkdirp": "^0.3.29",
     "@types/morgan": "^1.7.32",
+    "@types/sharp": "^0.17.1",
     "@types/stream-meter": "^0.0.19",
     "@types/uuid": "^2.0.29",
     "@types/winston": "^2.3.1",

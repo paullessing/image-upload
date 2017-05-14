@@ -9,6 +9,7 @@ export interface FileVersion {
   key: string;
   size: number;
   storageId: StorageId;
+  mimetype: string;
 }
 
 export interface UploadedFile {
@@ -16,7 +17,6 @@ export interface UploadedFile {
   id?: FileId; // TODO reason more strictly about IDs
 
   dateUploaded: Moment;
-  mimetype: string;
   filename: string;
   versions: {
     [key: string]: FileVersion
