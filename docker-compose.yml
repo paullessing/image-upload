@@ -1,0 +1,18 @@
+version: "2"
+
+services:
+  image_upload:
+    container_name: image-upload
+    build: .
+    command: yarn run start
+    expose:
+      - "3000"
+    ports:
+      - "3000:3000"
+    restart: always
+#    environment:
+#      - VIRTUAL_HOST=images.putit.at
+#      - VIRTUAL_NETWORK=nginx-proxy
+#      - VIRTUAL_PORT=3000
+#      - LETSENCRYPT_HOST=images.putit.at
+#      - LETSENCRYPT_EMAIL=lessing.paul@gmail.com
