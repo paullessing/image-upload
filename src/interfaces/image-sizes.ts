@@ -11,3 +11,8 @@ export class ImageSizes {
     ];
   }
 }
+
+// TODO make this list configurable
+export const IMAGE_SIZES = { // width x height
+  [ImageSizes.SMALL]: [600, 400]
+};
