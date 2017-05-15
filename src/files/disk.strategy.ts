@@ -2,7 +2,7 @@ import * as uuid from 'uuid';
 import * as path from 'path';
 import * as fs from 'fs';
 
-import { StorageId } from './uploaded-file.model';
+import { StorageId } from '../interfaces/uploaded-file.model';
 import { DiskStorageConfig } from '../config';
 import { StorageStrategy } from './storage-strategy.interface';
 import { sync as mkdirpSync } from 'mkdirp';

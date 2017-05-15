@@ -2,7 +2,7 @@ import { Service } from '../util/inject';
 import { Get, Post, Response } from 'express-router-decorators';
 import * as express from 'express';
 import * as Busboy from 'busboy';
-import { UploadedFile } from '../files/uploaded-file.model';
+import { UploadedFile } from '../interfaces/uploaded-file.model';
 import { ImageSize, ImageSizes } from '../interfaces/image-sizes';
 import { DownloadableFile, FileNotFoundError, UploadService } from '../upload/upload.service';
 

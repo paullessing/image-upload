@@ -1,5 +1,5 @@
 import { Service } from '../util/inject';
-import { FileId, FileVersion, UploadedFile } from '../files/uploaded-file.model';
+import { FileId, FileVersion, UploadedFile } from '../interfaces/uploaded-file.model';
 import { DatabaseService } from '../db/database.service';
 import { FileService } from '../files/file.service';
 import { ImageSize, ImageSizes } from '../interfaces/image-sizes';

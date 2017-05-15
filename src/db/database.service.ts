@@ -1,5 +1,5 @@
 import { Service } from '../util/inject';
-import { FileId, FileVersion, StorageId, UploadedFile } from '../files/uploaded-file.model';
+import { FileId, FileVersion, StorageId, UploadedFile } from '../interfaces/uploaded-file.model';
 import { DATABASE_STRATEGY, DatabaseStrategy } from './database-strategy.interface';
 import { inject } from 'inversify';
 import * as moment from 'moment';

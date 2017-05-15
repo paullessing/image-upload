@@ -11,7 +11,7 @@ export class ImageService {
     }
     const image = sharp(imageData); // TODO this needs to be a buffer not a stream
     return Promise.resolve()
-      .then(() => image.metadata()
+      .then(() => image.metadata())
       .then((metadata: sharp.Metadata) => {
         const isPortrait = metadata.width > metadata.height;
         const dimensions = getDimensions(size, isPortrait);

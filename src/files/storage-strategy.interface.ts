@@ -1,4 +1,4 @@
-import { FileContent, StorageId } from './uploaded-file.model';
+import { FileContent, StorageId } from '../interfaces/uploaded-file.model';
 
 export const STORAGE_STRATEGY = Symbol('StorageStrategy');
 
