@@ -1,18 +1,20 @@
 import { Service } from '../util/inject';
-import { FileId, FileVersion, StorageId, UploadedFile } from '../interfaces/uploaded-file.model';
+import { FileId, UploadedFile } from '../interfaces/uploaded-file.model';
 import { DATABASE_STRATEGY, DatabaseStrategy } from './database-strategy.interface';
 import { inject } from 'inversify';
 import * as moment from 'moment';
 import uuid = require('uuid');
+import { FileType } from '../interfaces/file-type.enum';
 
-interface StoredFile {
-  id?: FileId;
+export interface StoredFile {
+  id: string;
+  fileType: string;
 
   dateUploaded: string;
+  size: number;
   filename: string;
-  versions: {
-    [key: string]: FileVersion
-  };
+  storageId: string;
+  mimetype: string;
 }
 
 @Service()
@@ -22,12 +24,7 @@ export class DatabaseService {
   ) {}
 
   public saveFile(file: UploadedFile): Promise<UploadedFile> {
-    const data: StoredFile = {
-      id: file.id,
-      dateUploaded: file.dateUploaded.toJSON(),
-      filename: file.filename,
-      versions: file.versions
-    };
+    const data: StoredFile = Object.assign({}, file, { dateUploaded: file.dateUploaded.toJSON() });
 
     return (file.id ? this.database.update(data) : this.database.create(data))
       .then((data: StoredFile) => ({
@@ -41,9 +38,12 @@ export class DatabaseService {
       .then((file) => {
         const uploadedFile: UploadedFile = {
           id: file.id,
+          fileType: file.fileType as FileType,
           dateUploaded: moment(file.dateUploaded),
+          size: file.size,
           filename: file.filename,
-          versions: file.versions
+          storageId: file.storageId,
+          mimetype: file.mimetype
         };
 
         return uploadedFile;
