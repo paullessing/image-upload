@@ -1,10 +1,16 @@
 import { Service } from '../util/inject';
-import { FileId, FileVersion, UploadedFile } from '../interfaces/uploaded-file.model';
+import {
+  FileId, ImageMetadata, ResizedImage, StorageId, UploadedFile,
+  UploadedImage
+} from '../interfaces/uploaded-file.model';
 import { DatabaseService } from '../db/database.service';
 import { FileService } from '../files/file.service';
-import { ImageSize, ImageSizes } from '../interfaces/image-sizes';
 import { moment } from '../lib';
-import { ImageService } from '../image/image.service';
+import { ImageService, ResizingStream } from '../image/image.service';
+import { FileTypeDetectingStream } from '../files/file-type-detecting-stream';
+import * as meter from 'stream-meter';
+import * as sharp from 'sharp';
+import { FileTypes } from '../interfaces/file-type.enum';
 
 export interface DownloadableFile {
   data: NodeJS.ReadableStream;
@@ -30,17 +36,29 @@ export class UploadService {
   ) {}
 
   public uploadImage(data: NodeJS.ReadableStream, filename: string): Promise<UploadedFile> {
-    return this.fileService.uploadFile(data, filename, ImageSizes.ORIGINAL)
-      .then((version: FileVersion) => {
-        const file: UploadedFile = {
+    const streamSize = meter();
+    const mimeType = new FileTypeDetectingStream();
+    let metadata: sharp.Metadata;
+    const imageMetadata = sharp().metadata((error: any, _metadata: sharp.Metadata) => {
+      metadata = _metadata;
+    });
+
+    return this.fileService.uploadFile(data.pipe(streamSize).pipe(mimeType).pipe(imageMetadata))
+      .then((storageId: StorageId) => {
+        const image: UploadedImage = {
+          id: null,
+          storageId,
+          size: streamSize.bytes,
           dateUploaded: moment(),
           filename,
-          versions: {
-            [ImageSizes.ORIGINAL]: version,
-          }
+          fileType: FileTypes.IMAGE,
+          width: metadata.width as number,
+          height: metadata.height as number,
+          mimetype: mimeType.fileType.mime,
+          sizes: {}
         };
 
-        return file;
+        return image;
       })
       .then((file: UploadedFile) => {
         return this.database.saveFile(file);
@@ -57,40 +75,64 @@ export class UploadService {
       });
   }
 
-  public getImageContents(id: FileId, size: ImageSize): Promise<DownloadableFile> {
+  public getImageContents(id: FileId, size: string | null): Promise<DownloadableFile> {
     return this.getFile(id)
-      .then((file: UploadedFile) => this.ensureImageSize(file, size))
-      .then(([file, stream]: [UploadedFile, NodeJS.ReadableStream]) => ({
-        data: stream,
-        size: file.versions[size].size,
-        mimetype: file.versions[size].mimetype
-      }))
+      .then((image: UploadedImage) => this.ensureImageSize(image, size))
+      .then(([image, stream]: [UploadedImage, NodeJS.ReadableStream]) => {
+        const imageData = (size ? image.sizes[size] : image);
+
+        return {
+          data: stream,
+          size: imageData.size,
+          mimetype: imageData.mimetype
+        };
+      })
       .catch((e) => {
         console.error(e);
         throw e;
       });
   }
 
-  private ensureImageSize(file: UploadedFile, size: ImageSize): Promise<[UploadedFile, NodeJS.ReadableStream]> {
-    if (file.versions[size]) {
-      return this.fileService.getFile(file.versions[size].storageId)
-        .then((data: NodeJS.ReadableStream) => [file, data]);
+  private ensureImageSize(image: UploadedImage, size: string | null): Promise<[UploadedImage, NodeJS.ReadableStream]> {
+    // Original size
+    if (!size) {
+      return this.fileService.getFile(image.storageId)
+        .then((data: NodeJS.ReadableStream) => [image, data]);
     }
-    return this.fileService.getFile(file.versions[ImageSizes.ORIGINAL].storageId)
+
+    // Size already exists
+    if (image.sizes[size]) {
+      return this.fileService.getFile(image.sizes[size].storageId)
+        .then((data: NodeJS.ReadableStream) => [image, data]);
+    }
+
+    // Need to resize
+    return this.fileService.getFile(image.storageId)
       .then((data: NodeJS.ReadableStream) =>
         this.imageService.resize(data, size))
-      .then((newData: NodeJS.ReadableStream) => {
-        return this.fileService.uploadFileVersion(newData, size)
-          .then((newVersion: FileVersion) => {
-            const newVersions: { [key: string]: FileVersion } = { ...file.versions, [size]: newVersion };
+      .then((newStream: ResizingStream) => {
+        const streamSize = meter();
+        const mimeType = new FileTypeDetectingStream(); // TODO read the size using sharp() when storing an image. Images need a separate API
 
-            const newFile: UploadedFile = Object.assign({}, file, { versions: newVersions });
-            return this.database.saveFile(newFile);
+        return this.fileService.uploadFile(newStream.stream.pipe(streamSize).pipe(mimeType))
+          .then((id: StorageId) => {
+            const resizedImage: ResizedImage = {
+              width: newStream.width,
+              height: newStream.height,
+              mimetype: newStream.mimetype,
+              storageId: id,
+              imageSize: size,
+              size: streamSize.bytes
+            };
+            const newSizes = Object.assign({}, image.sizes, { [size]: resizedImage });
+            const newImage: UploadedImage = Object.assign({}, image, { sizes: newSizes });
+
+            return this.database.saveFile(newImage);
           })
-          .then((newFile: UploadedFile) =>
+          .then((newImage: UploadedImage) =>
             // TODO: This stores the file, then reads it from where it was stored, instead of reading from memory. It should return quickly.
-            this.fileService.getFile(newFile.versions[size].storageId)
-              .then((data: NodeJS.ReadableStream) => [newFile, data])
+            this.fileService.getFile(newImage.sizes[size].storageId)
+              .then((data: NodeJS.ReadableStream) => [newImage, data])
           );
       });
   }

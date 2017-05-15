@@ -5,8 +5,6 @@ import { STORAGE_STRATEGY, StorageStrategy } from './storage-strategy.interface'
 import * as meter from 'stream-meter';
 import { FileTypeDetectingStream } from './file-type-detecting-stream';
 
-
-
 @Service()
 export class FileService {
 
@@ -30,19 +28,6 @@ export class FileService {
       //
       //   return file;
       // });
-  }
-
-  public uploadFileVersion(data: NodeJS.ReadableStream, version: string): Promise<FileVersion> {
-    const size = meter();
-
-    return this.storage.storeFile(data.pipe(size))
-      .then((storageId: StorageId) => {
-        return {
-          key: version,
-          size: size.bytes,
-          storageId
-        };
-      });
   }
 
   public getFile(storageId: StorageId): Promise<NodeJS.ReadableStream> {

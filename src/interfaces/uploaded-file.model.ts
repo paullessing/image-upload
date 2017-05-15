@@ -1,7 +1,6 @@
 import { Stream } from 'stream';
 import { Moment } from 'moment';
 import { FileType } from './file-type.enum';
-import { ImageSize } from './image-sizes';
 
 export type FileContent = string | Stream;
 export type FileId = string;
@@ -28,7 +27,7 @@ export type StorageId = string;
 // }
 
 export interface UploadedFile {
-  id: FileId;
+  id: FileId | null;
   fileType: FileType;
 
   dateUploaded: Moment;
@@ -51,7 +50,7 @@ export interface UploadedImage extends UploadedFile, ImageMetadata {
 }
 
 export interface ResizedImage extends ImageMetadata {
-  imageSize: ImageSize;
+  imageSize: string;
   size: number;
   storageId: StorageId;
 }

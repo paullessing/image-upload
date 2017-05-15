@@ -6,6 +6,8 @@ export interface Config {
 
   databaseType: 'memory' | 'file';
   fileDatabase?: FileDatabaseConfig;
+
+  imageSizes: ImageSizeConfig[];
 }
 
 export interface DiskStorageConfig {
@@ -14,4 +16,10 @@ export interface DiskStorageConfig {
 
 export interface FileDatabaseConfig {
   path: string;
+}
+
+export interface ImageSizeConfig {
+  name: string;
+  width: number;
+  height: number;
 }

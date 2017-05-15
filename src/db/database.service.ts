@@ -3,11 +3,10 @@ import { FileId, UploadedFile } from '../interfaces/uploaded-file.model';
 import { DATABASE_STRATEGY, DatabaseStrategy } from './database-strategy.interface';
 import { inject } from 'inversify';
 import * as moment from 'moment';
-import uuid = require('uuid');
 import { FileType } from '../interfaces/file-type.enum';
 
 export interface StoredFile {
-  id: string;
+  id: string | null;
   fileType: string;
 
   dateUploaded: string;
@@ -24,7 +23,15 @@ export class DatabaseService {
   ) {}
 
   public saveFile(file: UploadedFile): Promise<UploadedFile> {
-    const data: StoredFile = Object.assign({}, file, { dateUploaded: file.dateUploaded.toJSON() });
+    const data: StoredFile = {
+      id: file.id || null,
+      fileType: file.fileType as FileType,
+      dateUploaded: file.dateUploaded.toJSON(),
+      size: file.size,
+      filename: file.filename,
+      storageId: file.storageId,
+      mimetype: file.mimetype
+    };
 
     return (file.id ? this.database.update(data) : this.database.create(data))
       .then((data: StoredFile) => ({

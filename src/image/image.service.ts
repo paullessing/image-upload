@@ -1,33 +1,49 @@
 import { Service } from '../util/inject';
-import { IMAGE_SIZES, ImageSize, ImageSizes } from '../interfaces/image-sizes';
+import { inject } from 'inversify';
+import { CONFIG, Config, ImageSizeConfig } from '../config/config.interface';
 import * as sharp from 'sharp';
+import { Duplex } from 'stream';
+
+export interface ResizingStream {
+  width: number;
+  height: number;
+  mimetype: string;
+  stream: Duplex;
+}
 
 @Service()
 export class ImageService {
 
-  public resize(imageData: NodeJS.ReadableStream, size: ImageSize): Promise<NodeJS.ReadableStream> {
-    if (size === ImageSizes.ORIGINAL) {
-      return Promise.resolve(imageData);
-    }
-    const image = sharp(imageData); // TODO this needs to be a buffer not a stream
-    return Promise.resolve()
-      .then(() => image.metadata())
-      .then((metadata: sharp.Metadata) => {
-        const isPortrait = metadata.width > metadata.height;
-        const dimensions = getDimensions(size, isPortrait);
+  constructor(
+    @inject(CONFIG) private config: Config
+  ) {}
 
-        return image.resize(...dimensions)
-          .min() // Make image cover the dimensions
-          .toBuffer(); // TODO this needs to be a stream not a buffer
-      });
+  public resize(imageData: NodeJS.ReadableStream, size: string): Promise<ResizingStream> {
+    return Promise.reject('Not implemented');
+    // const image = sharp(imageData); // TODO this needs to be a buffer not a stream
+    // return Promise.resolve()
+    //   .then(() => image.metadata())
+    //   .then((metadata: sharp.Metadata) => {
+    //     const isPortrait = metadata.width > metadata.height;
+    //     const dimensions = getDimensions(size, isPortrait);
+    //
+    //     return image.resize(...dimensions)
+    //       .min() // Make image cover the dimensions
+    //       .toBuffer(); // TODO this needs to be a stream not a buffer
+    //   });
   }
-}
 
-function getDimensions(size: ImageSize, isPortrait: boolean): [number, number] {
-  const configDimensions = IMAGE_SIZES[size];
-  if (isPortrait && configDimensions[0] > configDimensions[1]) {
-    return [configDimensions[1], configDimensions[0]];
-  } else {
-    return configDimensions.slice();
+  private getDimensions(size: string, isPortrait: boolean): { width: number, height: number } {
+    const config = this.config.imageSizes.find((value: ImageSizeConfig) => value.name === size);
+
+    if (!config) {
+      throw new Error(`Cannot find image size: '${size}'`);
+    }
+
+    if (isPortrait && config.width > config.height) {
+      return { width: config.height, height: config.width };
+    } else {
+      return { width: config.width, height: config.height };
+    }
   }
 }
