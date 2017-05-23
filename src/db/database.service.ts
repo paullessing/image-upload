@@ -22,7 +22,7 @@ export class DatabaseService {
     @inject(DATABASE_STRATEGY) private database: DatabaseStrategy
   ) {}
 
-  public saveFile(file: UploadedFile): Promise<UploadedFile> {
+  public async saveFile(file: UploadedFile): Promise<UploadedFile> {
     const data: StoredFile = {
       id: file.id || null,
       fileType: file.fileType as FileType,
@@ -33,14 +33,14 @@ export class DatabaseService {
       mimetype: file.mimetype
     };
 
-    return (file.id ? this.database.update(data) : this.database.create(data))
-      .then((data: StoredFile) => ({
-        ...file,
-        id: data.id as string
-      }));
+    const newFile = await (file.id ? this.database.update(data) : this.database.create(data));
+    return {
+      ...file,
+      id: newFile.id as string
+    };
   }
 
-  public getFile(id: FileId): Promise<UploadedFile> {
+  public async getFile(id: FileId): Promise<UploadedFile> {
     return this.database.retrieve<StoredFile>(id)
       .then((file) => {
         const uploadedFile: UploadedFile = {

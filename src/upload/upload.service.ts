@@ -11,6 +11,7 @@ import { FileTypeDetectingStream } from '../files/file-type-detecting-stream';
 import * as meter from 'stream-meter';
 import * as sharp from 'sharp';
 import { FileTypes } from '../interfaces/file-type.enum';
+import { BufferingStream } from './buffering-stream';
 
 export interface DownloadableFile {
   data: NodeJS.ReadableStream;
@@ -35,48 +36,40 @@ export class UploadService {
     private imageService: ImageService
   ) {}
 
-  public uploadImage(data: NodeJS.ReadableStream, filename: string): Promise<UploadedFile> {
-    const streamSize = meter();
+  public async uploadImage(data: NodeJS.ReadableStream, filename: string): Promise<UploadedFile> {
     const mimeType = new FileTypeDetectingStream();
-    let metadata: sharp.Metadata;
-    const imageMetadata = sharp().metadata((error: any, _metadata: sharp.Metadata) => {
-      metadata = _metadata;
-    });
+    const toBuffer = new BufferingStream();
 
-    return this.fileService.uploadFile(data.pipe(streamSize).pipe(mimeType).pipe(imageMetadata))
-      .then((storageId: StorageId) => {
-        const image: UploadedImage = {
-          id: null,
-          storageId,
-          size: streamSize.bytes,
-          dateUploaded: moment(),
-          filename,
-          fileType: FileTypes.IMAGE,
-          width: metadata.width as number,
-          height: metadata.height as number,
-          mimetype: mimeType.fileType.mime,
-          sizes: {}
-        };
+    // TODO consider not reading image size; that could be redundant
 
-        return image;
-      })
-      .then((file: UploadedFile) => {
-        return this.database.saveFile(file);
-      });
+    const storageId: StorageId = await this.fileService.uploadFile(data.pipe(mimeType).pipe(toBuffer));
+    const metadata = await sharp(toBuffer.buffer).metadata();
+
+    const image: UploadedImage = {
+      id: null,
+      storageId,
+      size: toBuffer.length,
+      dateUploaded: moment(),
+      filename,
+      fileType: FileTypes.IMAGE,
+      width: metadata.width as number,
+      height: metadata.height as number,
+      mimetype: mimeType.fileType.mime,
+      sizes: {}
+    };
+    return this.database.saveFile(image);
   }
 
-  public getFile(id: FileId): Promise<UploadedFile> {
-    return this.database.getFile(id)
-      .then((file: UploadedFile) => {
-        if (!file) {
-          throw new FileNotFoundError(id);
-        }
-        return file;
-      });
+  public async getFile(id: FileId): Promise<UploadedFile> {
+    const file = await this.database.getFile(id);
+    if (!file) {
+      throw new FileNotFoundError(id);
+    }
+    return file;
   }
 
-  public getImageContents(id: FileId, size: string | null): Promise<DownloadableFile> {
-    return this.getFile(id)
+  public async getImageContents(id: FileId, size: string | null): Promise<DownloadableFile> {
+    const image: UploadedImage = await this.getFile(id); // TODO get image not file needs to be separate
       .then((image: UploadedImage) => this.ensureImageSize(image, size))
       .then(([image, stream]: [UploadedImage, NodeJS.ReadableStream]) => {
         const imageData = (size ? image.sizes[size] : image);
