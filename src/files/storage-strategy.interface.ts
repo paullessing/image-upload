@@ -1,8 +1,9 @@
-import { FileContent, StorageId } from './uploaded-file.model';
+import { FileContent, StorageId } from '../interfaces/uploaded-file.model';
 
 export const STORAGE_STRATEGY = Symbol('StorageStrategy');
 
 export interface StorageStrategy {
-  getFile(id: StorageId): Promise<NodeJS.ReadableStream>;
-  storeFile(content: NodeJS.ReadableStream): Promise<StorageId>;
+  getStream(id: StorageId): Promise<NodeJS.ReadableStream>;
+  storeStream(content: NodeJS.ReadableStream): Promise<StorageId>;
+  storeBuffer(content: Buffer): Promise<StorageId>;
 }

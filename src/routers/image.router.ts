@@ -2,9 +2,11 @@ import { Service } from '../util/inject';
 import { Get, Post, Response } from 'express-router-decorators';
 import * as express from 'express';
 import * as Busboy from 'busboy';
-import { UploadedFile } from '../files/uploaded-file.model';
-import { ImageSize, ImageSizes } from '../interfaces/image-sizes';
+import { UploadedFile } from '../interfaces/uploaded-file.model';
 import { DownloadableFile, FileNotFoundError, UploadService } from '../upload/upload.service';
+import { CONFIG, Config, ImageSizeConfig } from '../config/config.interface';
+import { inject } from 'inversify';
+import { UploadedImage } from '../interfaces/uploaded-image.model';
 
 export interface ImageMetadata {
   id: string;
@@ -13,12 +15,24 @@ export interface ImageMetadata {
   sizes: string[];
 }
 
+class UnknownImageSizeError extends Error {
+  constructor(size: string) {
+    super(`Size '${size}' does not exist in config`); // 'Error' breaks prototype chain here
+    Object.setPrototypeOf(this, new.target.prototype); // restore prototype chain
+  }
+}
+
 @Service()
 export class ImageRouter {
 
+  private knownImageSizes: string[];
+
   constructor(
-    private uploadService: UploadService
-  ) {}
+    private uploadService: UploadService,
+    @inject(CONFIG) config: Config
+  ) {
+    this.knownImageSizes = config.imageSizes.map((size: ImageSizeConfig) => size.name);
+  }
 
   @Get('/')
   public getImageUploadForm(): Promise<Response> {
@@ -63,7 +77,7 @@ export class ImageRouter {
       });
       busboy.on('finish', () => {
         if (uploadedFile) {
-          uploadedFile.then((file: UploadedFile) => Response.success(201, this.getMetadata(file)))
+          uploadedFile.then((image: UploadedImage) => Response.success(201, this.getMetadata(image)))
             .then(resolve, reject);
         } else {
           reject(Response.error(400, 'Missing "image" field in request'));
@@ -82,30 +96,40 @@ export class ImageRouter {
   @Get('/:imageId/:size')
   public getImage(req: express.Request, res: express.Response): void {
     const imageId = req.params['imageId'];
-    const size = req.params['size'] || ImageSizes.ORIGINAL;
+    Promise.resolve()
+      .then(() => {
+        return this.getValidImageSize(req.params['size']);
+      })
+      .then((size: string) => {
+        return this.uploadService.getImageContents(imageId, size)
+          .then((image: DownloadableFile) => {
+            res.header('Content-Length', `${image.size}`);
+            res.header('Content-Type', `${image.mimetype}`);
 
-    if (ImageSizes.values().indexOf(size) < 0) {
-      return res.sendStatus(404).end();
-    }
-
-    this.uploadService.getImageContents(imageId, size)
-      .then((image: DownloadableFile) => {
-        res.header('Content-Length', `${image.size}`);
-        res.header('Content-Type', `${image.mimetype}`);
-        image.data.pipe(res);
-      }, () => {
-        res.sendStatus(404).end();
+            if (image.data instanceof Buffer) {
+              res.end(image.data);
+            } else {
+              (image.data as NodeJS.ReadableStream).pipe(res);
+            }
+          });
       }).catch((e) => {
-      console.error(e);
-      res.sendStatus(500).end();
-    });
+        if (e instanceof FileNotFoundError) {
+          res.sendStatus(404).end();
+        } else if (e instanceof UnknownImageSizeError) {
+          console.error(e);
+          res.sendStatus(404).end();
+        } else {
+          console.error(e);
+          res.sendStatus(500).end();
+        }
+      })
   }
 
   @Get('/:imageId/info') // Must be below getImage for correct evaluation (This is incorrect, see https://github.com/FOODit/express-router-decorators/issues/2)
   public getImageInfo(req: express.Request): Promise<Response> {
     const imageId = req.params['imageId'];
     return this.uploadService.getFile(imageId)
-      .then((file: UploadedFile) => Response.success(this.getMetadata(file)))
+      .then((image: UploadedImage) => Response.success(this.getMetadata(image)))
       .catch((e: any) => {
         if (e instanceof FileNotFoundError) {
           return Response.reject(404);
@@ -116,12 +140,24 @@ export class ImageRouter {
       });
   }
 
-  private getMetadata(image: UploadedFile): ImageMetadata {
+  private getMetadata(image: UploadedImage): ImageMetadata {
     return {
       id: image.id as string,
       filename: image.filename,
       dateUploaded: image.dateUploaded.toJSON(),
-      sizes: Object.keys(image.versions)
+      sizes: Object.keys(image.sizes)
     };
+  }
+
+  private getValidImageSize(size: string): string | null {
+    if (!size || size === 'original') {
+      return null;
+    }
+
+    if (this.knownImageSizes.indexOf(size) < 0) {
+      throw new UnknownImageSizeError(size);
+    }
+
+    return size;
   }
 }
