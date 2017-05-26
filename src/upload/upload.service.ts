@@ -1,20 +1,19 @@
 import { Service } from '../util/inject';
 import {
-  FileId, ImageMetadata, ResizedImage, StorageId, UploadedFile,
-  UploadedImage
+  FileId, ImageMetadata, StorageId, UploadedFile,
 } from '../interfaces/uploaded-file.model';
 import { DatabaseService } from '../db/database.service';
 import { FileService } from '../files/file.service';
 import { moment } from '../lib';
-import { ImageService, ResizingStream } from '../image/image.service';
+import { ImageService } from '../image/image.service';
 import { FileTypeDetectingStream } from '../files/file-type-detecting-stream';
-import * as meter from 'stream-meter';
 import * as sharp from 'sharp';
 import { FileTypes } from '../interfaces/file-type.enum';
 import { BufferingStream } from './buffering-stream';
+import { ResizedImage, UploadedImage } from '../interfaces/uploaded-image.model';
 
 export interface DownloadableFile {
-  data: NodeJS.ReadableStream;
+  data: NodeJS.ReadableStream | Buffer;
   size: number;
   mimetype: string;
 }
@@ -25,7 +24,6 @@ export class FileNotFoundError extends Error {
     Object.setPrototypeOf(this, new.target.prototype); // restore prototype chain
   }
 }
-
 
 @Service()
 export class UploadService {
@@ -39,8 +37,6 @@ export class UploadService {
   public async uploadImage(data: NodeJS.ReadableStream, filename: string): Promise<UploadedFile> {
     const mimeType = new FileTypeDetectingStream();
     const toBuffer = new BufferingStream();
-
-    // TODO consider not reading image size; that could be redundant
 
     const storageId: StorageId = await this.fileService.uploadFile(data.pipe(mimeType).pipe(toBuffer));
     const metadata = await sharp(toBuffer.buffer).metadata();
@@ -69,64 +65,55 @@ export class UploadService {
   }
 
   public async getImageContents(id: FileId, size: string | null): Promise<DownloadableFile> {
-    const image: UploadedImage = await this.getFile(id); // TODO get image not file needs to be separate
-      .then((image: UploadedImage) => this.ensureImageSize(image, size))
-      .then(([image, stream]: [UploadedImage, NodeJS.ReadableStream]) => {
-        const imageData = (size ? image.sizes[size] : image);
+    const image: UploadedImage = await this.database.getImage(id);
+    if (!image) {
+      throw new FileNotFoundError(id);
+    }
+    if (size === null) {
+      const data = await this.fileService.getFile(image.storageId);
+      return {
+        data,
+        size: image.size,
+        mimetype: image.mimetype
+      };
+    }
 
-        return {
-          data: stream,
-          size: imageData.size,
-          mimetype: imageData.mimetype
-        };
-      })
-      .catch((e) => {
-        console.error(e);
-        throw e;
-      });
+    const [resizedImage, data] = await this.ensureImageSize(image, size);
+    return {
+      data,
+      size: resizedImage.size,
+      mimetype: (resizedImage as ImageMetadata).mimetype
+    };
   }
 
-  private ensureImageSize(image: UploadedImage, size: string | null): Promise<[UploadedImage, NodeJS.ReadableStream]> {
-    // Original size
-    if (!size) {
-      return this.fileService.getFile(image.storageId)
-        .then((data: NodeJS.ReadableStream) => [image, data]);
-    }
-
-    // Size already exists
+  private async ensureImageSize(image: UploadedImage, size: string): Promise<[ResizedImage, NodeJS.ReadableStream | Buffer]> {
     if (image.sizes[size]) {
-      return this.fileService.getFile(image.sizes[size].storageId)
-        .then((data: NodeJS.ReadableStream) => [image, data]);
+      const data = await this.fileService.getFile(image.sizes[size].storageId);
+      return [image.sizes[size], data];
     }
 
-    // Need to resize
-    return this.fileService.getFile(image.storageId)
-      .then((data: NodeJS.ReadableStream) =>
-        this.imageService.resize(data, size))
-      .then((newStream: ResizingStream) => {
-        const streamSize = meter();
-        const mimeType = new FileTypeDetectingStream(); // TODO read the size using sharp() when storing an image. Images need a separate API
+    const sourceImage = await this.fileService.getFile(image.storageId);
+    const resizedImageData = await this.imageService.resize(sourceImage, image as ImageMetadata, size);
 
-        return this.fileService.uploadFile(newStream.stream.pipe(streamSize).pipe(mimeType))
-          .then((id: StorageId) => {
-            const resizedImage: ResizedImage = {
-              width: newStream.width,
-              height: newStream.height,
-              mimetype: newStream.mimetype,
-              storageId: id,
-              imageSize: size,
-              size: streamSize.bytes
-            };
-            const newSizes = Object.assign({}, image.sizes, { [size]: resizedImage });
-            const newImage: UploadedImage = Object.assign({}, image, { sizes: newSizes });
+    const storageId = await this.fileService.uploadFile(resizedImageData.buffer);
+    const resizedImage: ResizedImage = {
+      height: resizedImageData.height,
+      width: resizedImageData.width,
+      mimetype: resizedImageData.mimetype,
+      imageSize: size,
+      size: resizedImageData.size,
+      storageId
+    };
 
-            return this.database.saveFile(newImage);
-          })
-          .then((newImage: UploadedImage) =>
-            // TODO: This stores the file, then reads it from where it was stored, instead of reading from memory. It should return quickly.
-            this.fileService.getFile(newImage.sizes[size].storageId)
-              .then((data: NodeJS.ReadableStream) => [newImage, data])
-          );
-      });
+    const newImage: UploadedImage = {
+      ...image,
+      sizes: {
+        ...image.sizes,
+        [size]: resizedImage
+      }
+    } as UploadedImage;
+
+    await this.database.saveFile(newImage);
+    return [resizedImage, resizedImageData.buffer];
   }
 }

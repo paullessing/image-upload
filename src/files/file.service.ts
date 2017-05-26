@@ -2,8 +2,6 @@ import { Service } from '../util/inject';
 import { StorageId } from '../interfaces/uploaded-file.model';
 import { inject } from 'inversify';
 import { STORAGE_STRATEGY, StorageStrategy } from './storage-strategy.interface';
-import * as meter from 'stream-meter';
-import { FileTypeDetectingStream } from './file-type-detecting-stream';
 
 @Service()
 export class FileService {
@@ -13,11 +11,12 @@ export class FileService {
   ) {
   }
 
-  public uploadFile(data: NodeJS.ReadableStream): Promise<StorageId> {
-    const size = meter();
-    const mimeType = new FileTypeDetectingStream(); // TODO read the size using sharp() when storing an image. Images need a separate API
-
-    return this.storage.storeFile(data.pipe(size).pipe(mimeType));
+  public uploadFile(data: NodeJS.ReadableStream | Buffer): Promise<StorageId> {
+    if (data instanceof Buffer) {
+      return this.storage.storeBuffer(data);
+    } else {
+      return this.storage.storeStream(data as NodeJS.ReadableStream);
+    }
       // .then((storageId: StorageId) => {
       //   // const file: FileVersion = {
       //   //   key: version,
@@ -31,6 +30,6 @@ export class FileService {
   }
 
   public getFile(storageId: StorageId): Promise<NodeJS.ReadableStream> {
-    return this.storage.getFile(storageId);
+    return this.storage.getStream(storageId);
   }
 }

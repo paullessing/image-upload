@@ -1,11 +1,13 @@
-import { FileId } from './uploaded-file.model';
-import { Moment } from 'moment';
+import { ImageMetadata, StorageId, UploadedFile } from './uploaded-file.model';
 
-export interface UploadedImage {
-  id: FileId;
+export interface UploadedImage extends UploadedFile, ImageMetadata {
+  sizes: {
+    [size: string]: ResizedImage
+  }
+}
 
-
-  dateUploaded: Moment;
-  filename: string;
-
+export interface ResizedImage extends ImageMetadata {
+  imageSize: string;
+  size: number;
+  storageId: StorageId;
 }

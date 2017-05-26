@@ -15,30 +15,45 @@ export class StoreToDiskStrategy implements StorageStrategy {
     mkdirpSync(config.dir); // Ensure uploads directory exists
   }
 
-  public storeFile(content: NodeJS.ReadableStream): Promise<StorageId> {
-    return this.getUniqueId()
-      .then((id: string) => {
-        const path = this.getPath(id);
-        return new Promise((resolve, reject) => {
-          try {
-            const stream = fs.createWriteStream(path);
+  public async storeStream(content: NodeJS.ReadableStream): Promise<StorageId> {
+    const id = await this.getUniqueId();
+    const path = this.getPath(id);
 
-            content.on('end', () => {
-              resolve(id);
-            });
-            content.on('error', (err: any) => {
-              reject(err);
-            });
+    return new Promise<StorageId>((resolve, reject) => {
+      try {
+        const stream = fs.createWriteStream(path);
 
-            content.pipe(stream);
-          } catch (e) {
-            reject(e);
-          }
+        content.on('end', () => {
+          resolve(id);
         });
-      });
+        content.on('error', (err: any) => {
+          reject(err);
+        });
+
+        content.pipe(stream);
+      } catch (e) {
+        reject(e);
+      }
+    });
   }
 
-  public getFile(id: StorageId): Promise<NodeJS.ReadableStream> {
+  public async storeBuffer(data: Buffer): Promise<StorageId> {
+    const id = await this.getUniqueId();
+    const path = this.getPath(id);
+
+    return new Promise<StorageId>((resolve, reject) => {
+      try {
+        fs.writeFile(path, data, (err) => {
+          if (err) reject(err);
+          resolve(id);
+        });
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
+  public getStream(id: StorageId): Promise<NodeJS.ReadableStream> {
     const path = this.getPath(id);
     const stream = fs.createReadStream(path);
     return Promise.resolve(stream);

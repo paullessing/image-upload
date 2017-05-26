@@ -2,10 +2,11 @@ import { Service } from '../util/inject';
 import { Get, Post, Response } from 'express-router-decorators';
 import * as express from 'express';
 import * as Busboy from 'busboy';
-import { UploadedFile, UploadedImage } from '../interfaces/uploaded-file.model';
+import { UploadedFile } from '../interfaces/uploaded-file.model';
 import { DownloadableFile, FileNotFoundError, UploadService } from '../upload/upload.service';
 import { CONFIG, Config, ImageSizeConfig } from '../config/config.interface';
 import { inject } from 'inversify';
+import { UploadedImage } from '../interfaces/uploaded-image.model';
 
 export interface ImageMetadata {
   id: string;
@@ -95,18 +96,21 @@ export class ImageRouter {
   @Get('/:imageId/:size')
   public getImage(req: express.Request, res: express.Response): void {
     const imageId = req.params['imageId'];
-    console.log('Image', imageId);
     Promise.resolve()
       .then(() => {
         return this.getValidImageSize(req.params['size']);
       })
       .then((size: string) => {
-        console.log('Size', size);
         return this.uploadService.getImageContents(imageId, size)
           .then((image: DownloadableFile) => {
             res.header('Content-Length', `${image.size}`);
             res.header('Content-Type', `${image.mimetype}`);
-            image.data.pipe(res);
+
+            if (image.data instanceof Buffer) {
+              res.end(image.data);
+            } else {
+              (image.data as NodeJS.ReadableStream).pipe(res);
+            }
           });
       }).catch((e) => {
         if (e instanceof FileNotFoundError) {
@@ -115,6 +119,7 @@ export class ImageRouter {
           console.error(e);
           res.sendStatus(404).end();
         } else {
+          console.error(e);
           res.sendStatus(500).end();
         }
       })

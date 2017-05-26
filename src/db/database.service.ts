@@ -3,18 +3,8 @@ import { FileId, UploadedFile } from '../interfaces/uploaded-file.model';
 import { DATABASE_STRATEGY, DatabaseStrategy } from './database-strategy.interface';
 import { inject } from 'inversify';
 import * as moment from 'moment';
-import { FileType } from '../interfaces/file-type.enum';
-
-export interface StoredFile {
-  id: string | null;
-  fileType: string;
-
-  dateUploaded: string;
-  size: number;
-  filename: string;
-  storageId: string;
-  mimetype: string;
-}
+import { UploadedImage } from '../interfaces/uploaded-image.model';
+import { FileTypes } from '../interfaces/file-type.enum';
 
 @Service()
 export class DatabaseService {
@@ -22,38 +12,35 @@ export class DatabaseService {
     @inject(DATABASE_STRATEGY) private database: DatabaseStrategy
   ) {}
 
-  public async saveFile(file: UploadedFile): Promise<UploadedFile> {
-    const data: StoredFile = {
+  public async saveFile<T extends UploadedFile>(file: T): Promise<T> {
+    const data: { id: string | null, [key: string]: any } = Object.assign({}, file, {
       id: file.id || null,
-      fileType: file.fileType as FileType,
-      dateUploaded: file.dateUploaded.toJSON(),
-      size: file.size,
-      filename: file.filename,
-      storageId: file.storageId,
-      mimetype: file.mimetype
-    };
+      dateUploaded: file.dateUploaded.toJSON()
+    });
 
     const newFile = await (file.id ? this.database.update(data) : this.database.create(data));
-    return {
-      ...file,
+    return Object.assign({}, file, {
       id: newFile.id as string
-    };
+    }) as T;
   }
 
   public async getFile(id: FileId): Promise<UploadedFile> {
-    return this.database.retrieve<StoredFile>(id)
-      .then((file) => {
-        const uploadedFile: UploadedFile = {
-          id: file.id,
-          fileType: file.fileType as FileType,
-          dateUploaded: moment(file.dateUploaded),
-          size: file.size,
-          filename: file.filename,
-          storageId: file.storageId,
-          mimetype: file.mimetype
-        };
+    const storedFile: UploadedFile = await this.database.retrieve<UploadedFile>(id);
 
-        return uploadedFile;
-      });
+    return Object.assign({}, storedFile, {
+      dateUploaded: moment(storedFile.dateUploaded)
+    }) as UploadedFile;
+  }
+
+  public async getImage(id: FileId): Promise<UploadedImage> {
+    const storedFile: UploadedImage = await this.database.retrieve<UploadedImage>(id);
+
+    if (storedFile.fileType !== FileTypes.IMAGE) {
+      throw new Error(`File ${id} is not an image`);
+    }
+
+    return Object.assign({}, storedFile, {
+      dateUploaded: moment(storedFile.dateUploaded)
+    }) as UploadedImage;
   }
 }
