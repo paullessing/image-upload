@@ -5,7 +5,7 @@ import { ImageRouter } from './image.router';
 @Service()
 export class ApiRouter {
 
-  @Use('/', UseType.ROUTER)
+  @Use('/images', UseType.ROUTER)
   public imageRouter: ImageRouter;
 
   constructor(

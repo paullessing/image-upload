@@ -23,7 +23,9 @@ export class DatabaseStrategyProvider {
           throw new Error(`Missing database configuration for file database`);
         }
       case 'mongodb':
-        return new MongodbDatabaseStrategy();
+        const strategy = new MongodbDatabaseStrategy();
+        strategy.init();
+        return strategy;
       default:
         throw new Error(`Unknown Database type: '${this.config.databaseType}'`);
     }

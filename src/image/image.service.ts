@@ -41,20 +41,6 @@ export class ImageService {
         });
       imageData.pipe(s);
     });
-
-    // return Promise.reject('Not implemented');
-
-    // const image = sharp(imageData); // TODO this needs to be a buffer not a stream
-    // return Promise.resolve()
-    //   .then(() => image.metadata())
-    //   .then((metadata: sharp.Metadata) => {
-    //     const isPortrait = metadata.width > metadata.height;
-    //     const dimensions = getDimensions(size, isPortrait);
-    //
-    //     return image.resize(...dimensions)
-    //       .min() // Make image cover the dimensions
-    //       .toBuffer(); // TODO this needs to be a stream not a buffer
-    //   });
   }
 
   private getDimensions(size: string, isPortrait: boolean): { width: number, height: number } {
