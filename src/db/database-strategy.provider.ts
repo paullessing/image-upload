@@ -4,6 +4,7 @@ import { Config, CONFIG } from '../config';
 import { MemoryDatabaseStrategy } from './strategies/memory-database-strategy';
 import { FilesystemDatabaseStrategy } from './strategies/filesystem-database-strategy';
 import { inject } from 'inversify';
+import { MongodbDatabaseStrategy } from './strategies/mongodb-database-strategy';
 
 @Provider(DATABASE_STRATEGY)
 export class DatabaseStrategyProvider {
@@ -21,6 +22,8 @@ export class DatabaseStrategyProvider {
         } else {
           throw new Error(`Missing database configuration for file database`);
         }
+      case 'mongodb':
+        return new MongodbDatabaseStrategy();
       default:
         throw new Error(`Unknown Database type: '${this.config.databaseType}'`);
     }

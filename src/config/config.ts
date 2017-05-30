@@ -6,9 +6,9 @@ export const config: Config = {
   diskStorage: {
     dir: path.join(__dirname, '../../uploads')
   },
-  databaseType: 'file',
+  databaseType: 'mongodb',
   fileDatabase: {
-    path: path.join(__dirname, '../../db')
+    path: path.join(__dirname, '../../db.file')
   },
   imageSizes: [
     {

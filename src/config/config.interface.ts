@@ -4,7 +4,7 @@ export interface Config {
   storageType: 'disk';
   diskStorage?: DiskStorageConfig;
 
-  databaseType: 'memory' | 'file';
+  databaseType: 'memory' | 'file' | 'mongodb';
   fileDatabase?: FileDatabaseConfig;
 
   imageSizes: ImageSizeConfig[];
