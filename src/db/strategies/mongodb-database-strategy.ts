@@ -1,18 +1,24 @@
 import { DatabaseStrategy } from '../database-strategy.interface';
 import { Db, FindAndModifyWriteOpResultObject, InsertOneWriteOpResult, MongoClient } from 'mongodb';
 import * as uuid from 'uuid';
+import { MongoDbConfig } from '../../config/config.interface';
 
 export class MongodbDatabaseStrategy implements DatabaseStrategy {
   private db: Promise<Db>;
 
-  constructor() {
-  }
+  constructor(
+    private config: MongoDbConfig
+  ) {}
 
   public init(): void {
     console.log('Connecting to Mongodb');
     this.db = new Promise(async (resolve, reject) => {
       try {
-        const db = await MongoClient.connect('mongodb://localhost:27017/image-upload');
+        let url = this.config.url;
+        if (url[url.length - 1] !== '/') {
+          url = url + '/';
+        }
+        const db = await MongoClient.connect(`${url}image-upload`);
 
         console.log('Connected to MongoDB');
         // TODO investigate, maybe
@@ -26,7 +32,6 @@ export class MongodbDatabaseStrategy implements DatabaseStrategy {
         reject(e);
       }
     })
-
   }
 
   public async create<T extends { id?: string }>(data: T): Promise<T> {

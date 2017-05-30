@@ -6,6 +6,7 @@ export interface Config {
 
   databaseType: 'memory' | 'file' | 'mongodb';
   fileDatabase?: FileDatabaseConfig;
+  mongoDatabase?: MongoDbConfig;
 
   imageSizes: ImageSizeConfig[];
 }
@@ -22,4 +23,8 @@ export interface ImageSizeConfig {
   name: string;
   width: number;
   height: number;
+}
+
+export interface MongoDbConfig {
+  url: string;
 }

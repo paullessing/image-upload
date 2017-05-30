@@ -10,6 +10,9 @@ export const config: Config = {
   fileDatabase: {
     path: path.join(__dirname, '../../db.file')
   },
+  mongoDatabase: {
+    url: 'mongodb://localhost:27017'
+  },
   imageSizes: [
     {
       name: 'small',
