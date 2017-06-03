@@ -68,6 +68,13 @@
   version "7.0.14"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-7.0.14.tgz#1470fa002a113316ac9d9ad163fc738c7a0de2a4"
 
+"@types/s3-upload-stream@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/s3-upload-stream/-/s3-upload-stream-1.0.0.tgz#29428c5e68ad2e715e55602044a557555e84ab78"
+  dependencies:
+    "@types/node" "*"
+    aws-sdk "^2.37.0"
+
 "@types/serve-static@*":
   version "1.7.31"
   resolved "https://registry.yarnpkg.com/@types/serve-static/-/serve-static-1.7.31.tgz#15456de8d98d6b4cff31be6c6af7492ae63f521a"
@@ -197,7 +204,7 @@ asynckit@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
 
-aws-sdk@*, aws-sdk@^2.62.0:
+aws-sdk@*, aws-sdk@^2.37.0, aws-sdk@^2.62.0:
   version "2.62.0"
   resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.62.0.tgz#98508d3f93aaf3f74f18ca3b8cfe3a11bdad1a5f"
   dependencies:
@@ -1723,6 +1730,10 @@ rimraf@2, rimraf@^2.5.1, rimraf@^2.6.1:
 rx@2.3.24:
   version "2.3.24"
   resolved "https://registry.yarnpkg.com/rx/-/rx-2.3.24.tgz#14f950a4217d7e35daa71bbcbe58eff68ea4b2b7"
+
+s3-upload-stream@^1.0.7:
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/s3-upload-stream/-/s3-upload-stream-1.0.7.tgz#e3f80253141c569f105a62aa50ca9b45760e481d"
 
 safe-buffer@^5.0.1:
   version "5.0.1"
