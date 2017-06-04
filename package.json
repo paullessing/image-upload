@@ -45,7 +45,7 @@
     "@types/sharp": "^0.17.1",
     "@types/stream-meter": "^0.0.19",
     "@types/uuid": "^2.0.29",
-    "@types/winston": "^2.3.1",
+    "@types/winston": "^2.3.3",
     "concurrently": "^3.4.0",
     "nodemon": "^1.11.0",
     "typescript": "^2.3.1"

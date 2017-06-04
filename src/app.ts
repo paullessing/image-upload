@@ -6,10 +6,12 @@ import * as winston from 'winston';
 import { Dependencies } from './util/inject';
 import { ApiRouter } from './routers/api.router';
 
+Object.assign(winston, { level: 'debug' }); // Workaround because the typings file says this is readonly (but it isn't)
+
 const app = express();
 
 const container = Dependencies.createContainer(__dirname);
-const router = createRouter(container.get(ApiRouter), {log: winston});
+const router = createRouter(container.get(ApiRouter), { log: winston });
 
 app.use((morgan as any as morgan.Morgan)('dev'));
 

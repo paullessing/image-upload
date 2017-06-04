@@ -1,7 +1,8 @@
 import { DatabaseStrategy } from '../database-strategy.interface';
 import { Db, FindAndModifyWriteOpResultObject, InsertOneWriteOpResult, MongoClient } from 'mongodb';
 import * as uuid from 'uuid';
-import { MongoDbConfig } from '../../config/config.interface';
+import { MongoDbConfig } from '../../config';
+import { log } from '../../lib';
 
 export class MongodbDatabaseStrategy implements DatabaseStrategy {
   private db: Promise<Db>;
@@ -11,7 +12,7 @@ export class MongodbDatabaseStrategy implements DatabaseStrategy {
   ) {}
 
   public init(): void {
-    console.log('Connecting to Mongodb');
+    log.debug('Connecting to Mongodb');
     this.db = new Promise(async (resolve, reject) => {
       try {
         let url = this.config.url;
@@ -20,7 +21,7 @@ export class MongodbDatabaseStrategy implements DatabaseStrategy {
         }
         const db = await MongoClient.connect(`${url}image-upload`);
 
-        console.log('Connected to MongoDB');
+        log.debug('Connected to MongoDB');
         // TODO investigate, maybe
         // if (!(await db.collection('files').indexExists('id'))) {
         //   await db.collection('files').createIndex({ id: 1 }, {unique: true});

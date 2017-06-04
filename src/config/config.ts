@@ -15,6 +15,11 @@ export const config: Config = {
   },
   imageSizes: [
     {
+      name: 'thumbnail',
+      width: 30,
+      height: 30
+    },
+    {
       name: 'small',
       width: 640,
       height: 400

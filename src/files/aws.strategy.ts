@@ -6,6 +6,7 @@ import * as s3Stream from 's3-upload-stream';
 import { StorageId } from '../interfaces/uploaded-file.model';
 import { StorageStrategy } from './storage-strategy.interface';
 import * as path from 'path';
+import { log } from '../lib';
 
 export class UploadToAwsStrategy implements StorageStrategy {
 
@@ -26,7 +27,7 @@ export class UploadToAwsStrategy implements StorageStrategy {
 
     return new Promise<StorageId>((resolve, reject) => {
       try {
-        console.log('UPloading to ' ,id);
+        log.debug('Uploading stream to S3:' ,id);
 
         const upload = this.uploader.upload({
           Bucket: 'image-upload-data',
@@ -49,16 +50,18 @@ export class UploadToAwsStrategy implements StorageStrategy {
 
   public async storeBuffer(data: Buffer): Promise<StorageId> {
     const id = await this.getUniqueId();
+    log.debug('Uploading buffer to S3:' ,id);
 
     await this.s3.putObject({
       Bucket: 'image-upload-data',
       Key: id,
       Body: data
-    });
+    }).promise();
     return id;
   }
 
   public async getStream(id: StorageId): Promise<NodeJS.ReadableStream> {
+    log.debug('Fetching from S3:', id);
     return this.s3.getObject({
       Bucket: 'image-upload-data',
       Key: id
@@ -79,13 +82,13 @@ export class UploadToAwsStrategy implements StorageStrategy {
       )
       .then(() => {
         // Success means the ID is taken
-        console.log('Failed to get ID, file exists');
+        log.debug('Failed to get ID, file exists');
         return this.getUniqueId(maxRetries - 1)
       }, (err: AWSError) => {
         if (err.code === 'NotFound') {
           return id; // Success!
         }
-        console.log('Failed to get ID, error:', err.code);
+        log.debug('Failed to get ID, error:', err.code);
         return this.getUniqueId(maxRetries - 1);
       });
   }
