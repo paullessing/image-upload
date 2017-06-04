@@ -1,7 +1,7 @@
 export const CONFIG = Symbol('Config');
 
 export interface Config {
-  storageType: 'disk' | 'aws';
+  storageType: 'disk' | 'aws' | 'backblaze'
   diskStorage?: DiskStorageConfig;
 
   databaseType: 'memory' | 'file' | 'mongodb';
