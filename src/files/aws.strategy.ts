@@ -5,17 +5,18 @@ import * as s3Stream from 's3-upload-stream';
 
 import { StorageId } from '../interfaces/uploaded-file.model';
 import { StorageStrategy } from './storage-strategy.interface';
-import * as path from 'path';
 import { log } from '../lib';
+import { AwsStorageConfig } from '../config/config.interface';
 
 export class UploadToAwsStrategy implements StorageStrategy {
 
   private s3: S3;
   private uploader: s3Stream.S3StreamUploader;
 
-  constructor() {
-    // TODO inject config
-    const configFile = path.join(__dirname, '../../aws.json');
+  constructor(
+    private config: AwsStorageConfig
+  ) {
+    const configFile = config.path;
     const settings = JSON.parse(fs.readFileSync(configFile).toString());
     this.s3 = new S3(settings);
 
