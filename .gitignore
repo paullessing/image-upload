@@ -46,3 +46,4 @@ uploads/
 /db.file
 
 aws.json
+config.json

@@ -8,11 +8,23 @@ import { config } from './config/config';
 import { Dependencies } from './util/inject';
 import { ApiRouter } from './routers/api.router';
 
-const configPath = process.env.CONFIG_PATH || '/var/config.json';
-if (fs.existsSync(configPath)) {
+const hasEnvConfigPath = !!process.env.CONFIG_PATH;
+
+// TODO load config from /var/config.json if no env variable is set and that file exists
+if (hasEnvConfigPath) {
   try {
-    const extraConfig = fs.readFileSync(configPath);
-    Object.assign(config, extraConfig);
+    const configPath = process.env.CONFIG_PATH;
+    if (!fs.existsSync(configPath)) {
+      console.error(`File does not exist: ${configPath}`);
+      process.exit(1);
+    }
+    const extraConfig = fs.readFileSync(configPath).toString();
+    if (!extraConfig.length) {
+      console.error(`File is empty: ${configPath}`);
+      process.exit(1);
+    }
+
+    Object.assign(config, JSON.parse(extraConfig));
   } catch (e) {
     console.error('Failed to load config', e);
     process.exit(1);

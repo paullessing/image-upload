@@ -20,7 +20,10 @@ export class StorageStrategyProvider {
         }
         return new StoreToDiskStrategy(this.config.diskStorage);
       case 'aws':
-        return new UploadToAwsStrategy();
+        if (!this.config.awsStorage) {
+          throw new Error('Missing config for storage type: aws');
+        }
+        return new UploadToAwsStrategy(this.config.awsStorage);
       default:
         throw new Error(`Unknown Storage type: '${this.config.storageType}'`);
     }

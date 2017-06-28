@@ -3,16 +3,13 @@ import * as path from 'path';
 
 export const config: Config = {
   logLevel: 'debug',
-  storageType: 'aws',
+  storageType: 'disk',
   diskStorage: {
     dir: path.join(__dirname, '../../uploads')
   },
-  databaseType: 'mongodb',
+  databaseType: 'file',
   fileDatabase: {
     path: path.join(__dirname, '../../db.file')
-  },
-  mongoDatabase: {
-    url: 'mongodb://localhost:27017'
   },
   imageSizes: [
     {
