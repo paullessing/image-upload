@@ -13,19 +13,13 @@ export class StorageStrategyProvider {
   ) {}
 
   public $provide(): StorageStrategy {
-    switch(this.config.storageType) {
+    switch(this.config.storage.type) {
       case 'disk':
-        if (!this.config.diskStorage) {
-          throw new Error('Missing config for storage type: disk');
-        }
-        return new StoreToDiskStrategy(this.config.diskStorage);
+        return new StoreToDiskStrategy(this.config.storage);
       case 'aws':
-        if (!this.config.awsStorage) {
-          throw new Error('Missing config for storage type: aws');
-        }
-        return new UploadToAwsStrategy(this.config.awsStorage);
+        return new UploadToAwsStrategy(this.config.storage);
       default:
-        throw new Error(`Unknown Storage type: '${this.config.storageType}'`);
+        throw new Error(`Unknown Storage type: '${(this.config.storage as any).type}'`);
     }
   }
 }

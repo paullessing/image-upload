@@ -3,12 +3,12 @@ import * as path from 'path';
 
 export const config: Config = {
   logLevel: 'debug',
-  storageType: 'disk',
-  diskStorage: {
+  storage: {
+    type: 'disk',
     dir: path.join(__dirname, '../../uploads')
   },
-  databaseType: 'file',
-  fileDatabase: {
+  database: {
+    type: 'file',
     path: path.join(__dirname, '../../db.file')
   },
   imageSizes: [

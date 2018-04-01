@@ -13,25 +13,17 @@ export class DatabaseStrategyProvider {
   ) {}
 
   public $provide(): DatabaseStrategy {
-    switch(this.config.databaseType) {
+    switch(this.config.database.type) {
       case 'memory':
         return new MemoryDatabaseStrategy();
       case 'file':
-        if (this.config.fileDatabase) {
-          return new FilesystemDatabaseStrategy(this.config.fileDatabase);
-        } else {
-          throw new Error(`Missing database configuration for file database`);
-        }
+        return new FilesystemDatabaseStrategy(this.config.database);
       case 'mongodb':
-        if (this.config.mongoDatabase) {
-          const strategy = new MongodbDatabaseStrategy(this.config.mongoDatabase);
-          strategy.init();
-          return strategy;
-        } else {
-          throw new Error(`Missing database configuration for mongodb database`);
-        }
+        const strategy = new MongodbDatabaseStrategy(this.config.database);
+        strategy.init();
+        return strategy;
       default:
-        throw new Error(`Unknown Database type: '${this.config.databaseType}'`);
+        throw new Error(`Unknown Database type: '${(this.config.database as any).type}'`);
     }
   }
 }
