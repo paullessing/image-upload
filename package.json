@@ -7,11 +7,11 @@
   "author": "paullessing <paul@paullessing.com>",
   "license": "MIT",
   "scripts": {
-    "start": "node_modules/.bin/tsc && node dist/index.js",
-    "build": "node_modules/.bin/tsc",
-    "build-dev": "node_modules/.bin/tsc --watch --outDir tmp",
-    "nodemon": "node_modules/.bin/nodemon tmp/index.js",
-    "serve": "node_modules/.bin/concurrently --kill-others --prefix \"[{name}]\" --names \"tsc ,node\" --prefix-colors \"blue,magenta\" \"yarn build-dev\" \"yarn nodemon\""
+    "start": "tsc && node dist/index.js",
+    "build": "tsc",
+    "build-dev": "tsc --watch --outDir tmp",
+    "nodemon": "nodemon tmp/index.js",
+    "serve": "concurrently --kill-others --prefix \"[{name}]\" --names \"tsc ,node\" --prefix-colors \"blue,magenta\" \"yarn build-dev\" \"yarn nodemon\""
   },
   "dependencies": {
     "aws-sdk": "^2.62.0",
