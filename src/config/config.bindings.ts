@@ -25,7 +25,7 @@ export class ConfigBindings {
   }
 }
 
-function readFile(location: string): Config | null {
+function readFile(location: string | undefined): Config | null {
   if (!location) {
     return null;
   }

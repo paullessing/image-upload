@@ -34,7 +34,7 @@ export class UploadService {
     private imageService: ImageService
   ) {}
 
-  public async uploadImage(data: NodeJS.ReadableStream, filename: string): Promise<UploadedFile> {
+  public async uploadImage(data: NodeJS.ReadableStream, filename: string): Promise<UploadedImage> {
     const mimeType = new FileTypeDetectingStream();
     const toBuffer = new BufferingStream();
 
@@ -56,12 +56,12 @@ export class UploadService {
     return this.database.saveFile(image);
   }
 
-  public async getFile(id: FileId): Promise<UploadedFile> {
+  public async getFile<T extends UploadedFile = UploadedFile>(id: FileId): Promise<T> {
     const file = await this.database.getFile(id);
     if (!file) {
       throw new FileNotFoundError(id);
     }
-    return file;
+    return file as T;
   }
 
   public async getImageContents(id: FileId, size: string | null): Promise<DownloadableFile> {

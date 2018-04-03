@@ -61,8 +61,8 @@ export class StoreToDiskStrategy implements StorageStrategy {
 
   private getUniqueId(): Promise<string> {
     const id = uuid();
-    return Promise.resolve(this.getPath(id))
-      .then((path: string) => new Promise((resolve, reject) => {
+    return Promise.resolve<string>(this.getPath(id))
+      .then((path: string) => new Promise<string>((resolve, reject) => {
         fs.exists(path, (exists: boolean) => {
           if (!exists) {
             return resolve(id);

@@ -55,7 +55,7 @@ export class ImageRouter {
       }
     });
 
-    let uploadedFile: Promise<UploadedFile>;
+    let uploadedFile: Promise<UploadedImage>;
 
     return new Promise((resolve, reject) => {
       busboy.on('file', (
@@ -67,7 +67,7 @@ export class ImageRouter {
       ) => {
         if (fieldname === 'image') {
           uploadedFile = this.uploadService.uploadImage(file, filename)
-            .then((file: UploadedFile) => {
+            .then((file: UploadedImage) => {
               return file;
             });
         } else {
@@ -100,7 +100,7 @@ export class ImageRouter {
       .then(() => {
         return this.getValidImageSize(req.params['size']);
       })
-      .then((size: string) => {
+      .then((size: string | null) => {
         return this.uploadService.getImageContents(imageId, size)
           .then((image: DownloadableFile) => {
             res.header('Content-Length', `${image.size}`);
@@ -112,7 +112,7 @@ export class ImageRouter {
               (image.data as NodeJS.ReadableStream).pipe(res);
             }
           });
-      }).catch((e) => {
+      }).catch((e: any) => {
         if (e instanceof FileNotFoundError) {
           res.sendStatus(404).end();
         } else if (e instanceof UnknownImageSizeError) {
@@ -128,7 +128,7 @@ export class ImageRouter {
   @Get('/:imageId/info') // Must be below getImage for correct evaluation (This is incorrect, see https://github.com/FOODit/express-router-decorators/issues/2)
   public getImageInfo(req: express.Request): Promise<Response> {
     const imageId = req.params['imageId'];
-    return this.uploadService.getFile(imageId)
+    return this.uploadService.getFile<UploadedImage>(imageId)
       .then((image: UploadedImage) => Response.success(this.getMetadata(image)))
       .catch((e: any) => {
         if (e instanceof FileNotFoundError) {
