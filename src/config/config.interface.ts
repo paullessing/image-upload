@@ -16,6 +16,7 @@ export interface DiskStorageConfig {
 
 export interface AwsStorageConfig {
   type: 'aws';
+  bucketName: string;
   awsSettingsFile: string;
 }
 

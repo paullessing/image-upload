@@ -31,7 +31,7 @@ export class UploadToAwsStrategy implements StorageStrategy {
         log.debug('Uploading stream to S3:' ,id);
 
         const upload = this.uploader.upload({
-          Bucket: 'image-upload-data',
+          Bucket: this.config.bucketName,
           Key: id
         });
 
@@ -54,7 +54,7 @@ export class UploadToAwsStrategy implements StorageStrategy {
     log.debug('Uploading buffer to S3:' ,id);
 
     await this.s3.putObject({
-      Bucket: 'image-upload-data',
+      Bucket: this.config.bucketName,
       Key: id,
       Body: data
     }).promise();
@@ -64,7 +64,7 @@ export class UploadToAwsStrategy implements StorageStrategy {
   public async getStream(id: StorageId): Promise<NodeJS.ReadableStream> {
     log.debug('Fetching from S3:', id);
     return this.s3.getObject({
-      Bucket: 'image-upload-data',
+      Bucket: this.config.bucketName,
       Key: id
     }).createReadStream();
   }
@@ -77,7 +77,7 @@ export class UploadToAwsStrategy implements StorageStrategy {
     return Promise.resolve()
       .then(() =>
         this.s3.headObject({
-          Bucket: 'image-upload-data',
+          Bucket: this.config.bucketName,
           Key: id
         }).promise()
       )
