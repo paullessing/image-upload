@@ -10,7 +10,7 @@ import { CONFIG, Config } from './config';
 const container = Dependencies.createContainer(__dirname);
 const config = container.get<Config>(CONFIG);
 
-const logLevel = config.logLevel || 'debug';
+const logLevel = config.logLevel || 'warn';
 Object.assign(winston, { level: logLevel }); // Workaround because the typings file says this is readonly (but it isn't)
 
 const app = express();

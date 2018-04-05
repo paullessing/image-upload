@@ -1,4 +1,4 @@
-FROM jsixc/node-yarn-app:6
+FROM jsixc/node-yarn-app:8
 
 RUN yarn run build
 

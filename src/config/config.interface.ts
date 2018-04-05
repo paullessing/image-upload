@@ -16,7 +16,7 @@ export interface DiskStorageConfig {
 
 export interface AwsStorageConfig {
   type: 'aws';
-  path: string;
+  awsSettingsFile: string;
 }
 
 export interface MemoryDatabaseConfig {

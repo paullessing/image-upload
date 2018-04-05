@@ -16,7 +16,7 @@ export class UploadToAwsStrategy implements StorageStrategy {
   constructor(
     private config: AwsStorageConfig
   ) {
-    const configFile = config.path;
+    const configFile = config.awsSettingsFile;
     const settings = JSON.parse(fs.readFileSync(configFile).toString());
     this.s3 = new S3(settings);
 

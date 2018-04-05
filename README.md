@@ -1,2 +1,9 @@
-# image-upload
-Image upload service, storing to a variety of locations
+# Image Uploader
+Standalone service for uploading and automatically resizing images.
+
+## Configuration
+Create a config JSON file e.g. by copying the `config/config.sample.json` file.
+
+|----------|---------|--------------|
+| Property | Default | Valid values |
+|----------|---------|--------------|

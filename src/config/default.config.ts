@@ -1,7 +1,7 @@
 import { Config } from './config.interface';
 import * as path from 'path';
 
-export const config: Config = {
+export const defaultConfig: Config = {
   logLevel: 'debug',
   storage: {
     type: 'disk',

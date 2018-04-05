@@ -5,6 +5,7 @@ import { inject } from 'inversify';
 import * as moment from 'moment';
 import { UploadedImage } from '../interfaces/uploaded-image.model';
 import { FileTypes } from '../interfaces/file-type.enum';
+import { log } from '../lib';
 
 @Service()
 export class DatabaseService {
@@ -33,6 +34,7 @@ export class DatabaseService {
   }
 
   public async getImage(id: FileId): Promise<UploadedImage> {
+    log.debug('Getting image', id);
     const storedFile: UploadedImage = await this.database.retrieve<UploadedImage>(id);
 
     if (storedFile.fileType !== FileTypes.IMAGE) {

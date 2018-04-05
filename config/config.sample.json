@@ -1,0 +1,52 @@
+{
+  "logLevel": "debug",
+  "storage": {
+    "type": "disk",
+    "dir": "/var/uploads"
+  },
+  // AWS Storage
+  //"storage": {
+  //  "type": "aws",
+  //  "awsSettingsFile": "/var/config/aws.json" // File containing valid AWS config settings
+  //},
+  "database": {
+    "type": "memory"
+  },
+  // File DB
+  //"database": {
+  //  "type": "file",
+  //  "path": "/var/db.file" // File path where the DB will be stored
+  //},
+  // MongoDB
+  //{
+  //  "type": "mongodb",
+  //  "url": "mongodb://localhost:27017/image-upload" // Full Mongo2 URL
+  //},
+  "imageSizes": [
+    {
+      "name": "thumbnail",
+      "width": 30,
+      "height": 30
+    },
+    {
+      "name": "small",
+      "width": 640,
+      "height": 400
+    },
+    {
+      "name": "medium",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "name": "large",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "name": "huge",
+      "width": 3840,
+      "height": 2160
+    }
+  ]
+};
