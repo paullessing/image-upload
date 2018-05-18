@@ -4,4 +4,4 @@ node_modules
 dist
 tmp
 uploads
-db
+db.file
