@@ -20,6 +20,9 @@ services:
       - "./tsconfig.json:/srv/tsconfig.json"
       - "./nodemon.json:/srv/nodemon.json"
       - "./src:/srv/src"
+      - "./config/config.json:/config.json"
+    environment:
+      CONFIG_FILE: /config.json
 #    environment:
 #      - VIRTUAL_HOST=images.putit.at
 #      - VIRTUAL_NETWORK=nginx-proxy
