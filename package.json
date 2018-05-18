@@ -11,7 +11,7 @@
     "build": "tsc",
     "build-dev": "tsc --watch --outDir tmp",
     "nodemon": "nodemon tmp/index.js",
-    "serve": "concurrently --kill-others --prefix \"[{name}]\" --names \"tsc ,node\" --prefix-colors \"blue,magenta\" \"yarn build-dev\" \"yarn nodemon\""
+    "serve": "concurrently --kill-others --prefix \"[{name}]\" --names \"tsc ,node\" --prefix-colors \"blue,magenta\" \"yarn build-dev\" \"yarn nodemon\"",
     "docker-build": "docker build --pull --tag=image-upload .",
     "docker-run": "docker run -p 3000:3000 -d image-upload:latest"
   },

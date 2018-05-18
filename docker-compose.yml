@@ -3,15 +3,23 @@ version: "3"
 services:
   image_upload:
     container_name: image-upload
-    build: .
-    command: yarn run start
+    image: node:8
+    command: bash -c "yarn install && yarn run build && yarn run start"
     expose:
       - "3000"
     ports:
       - "3000:3000"
     restart: always
+    working_dir: /srv
     links:
       - db
+    volumes:
+      - "./package.json:/srv/package.json"
+      - "./yarn.lock:/srv/yarn.lock"
+      - "./config:/srv/config"
+      - "./tsconfig.json:/srv/tsconfig.json"
+      - "./nodemon.json:/srv/nodemon.json"
+      - "./src:/srv/src"
 #    environment:
 #      - VIRTUAL_HOST=images.putit.at
 #      - VIRTUAL_NETWORK=nginx-proxy
